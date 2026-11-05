@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ahorra+ · Backoffice</title>
+<style>
+  :root { --verde:#0f766e; --verde2:#115e59; --ambar:#b45309; --rojo:#b91c1c; --gris:#6b7280; --fondo:#f4f7f6; --borde:#e5e7eb; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--fondo); color:#1f2937; }
+  header { background: var(--verde2); color:#fff; padding:14px 24px; display:flex; align-items:center; gap:16px; }
+  header h1 { font-size:18px; margin:0; }
+  header .yo { margin-left:auto; font-size:13px; opacity:.9; }
+  nav { display:flex; gap:4px; padding:0 24px; background:#fff; border-bottom:1px solid var(--borde); flex-wrap:wrap; }
+  nav button { border:0; background:none; padding:12px 14px; cursor:pointer; font-size:14px; color:var(--gris); border-bottom:2px solid transparent; }
+  nav button.activo { color:var(--verde); border-bottom-color:var(--verde); font-weight:600; }
+  main { padding:20px 24px; max-width:1200px; }
+  .tarjeta { background:#fff; border:1px solid var(--borde); border-radius:12px; padding:16px; margin-bottom:16px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:8px; border-bottom:1px solid var(--borde); vertical-align:top; }
+  th { color:var(--gris); font-weight:600; }
+  input, select, textarea { font:inherit; padding:7px 9px; border:1px solid #cbd5e1; border-radius:8px; }
+  button.p { background:var(--verde); color:#fff; border:0; border-radius:8px; padding:8px 12px; cursor:pointer; }
+  button.s { background:#fff; color:var(--verde); border:1px solid var(--verde); border-radius:8px; padding:6px 10px; cursor:pointer; font-size:12px; }
+  .chip { display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:600; background:#e5e7eb; }
+  .ok { background:#ccfbf1; color:#115e59; } .warn { background:#fef3c7; color:#92400e; } .bad { background:#fee2e2; color:#991b1b; }
+  .fila { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
+  .kpis { display:flex; gap:12px; flex-wrap:wrap; }
+  .kpi { background:#fff; border:1px solid var(--borde); border-radius:12px; padding:12px 16px; min-width:140px; }
+  .kpi b { display:block; font-size:22px; }
+  #login { max-width:380px; margin:60px auto; }
+  .demo button { margin:4px 4px 0 0; }
+  .msg { font-size:13px; color:var(--rojo); min-height:18px; }
+  code { font-size:11px; color:var(--gris); word-break:break-all; }
+</style>
+</head>
+<body>
+<header><h1>Ahorra+ · Backoffice</h1><span class="yo" id="yo"></span></header>
+
+<section id="login" class="tarjeta">
+  <h2 style="margin-top:0">Acceso de operadores</h2>
+  <p style="font-size:13px;color:var(--gris)">SSO corporativo simulado (MVP). En producción: SSO + MFA desde VPN.</p>
+  <div class="fila"><input id="correo" placeholder="correo corporativo" style="flex:1"></div>
+  <div class="fila"><input id="clave" type="password" placeholder="clave" style="flex:1"><button class="p" onclick="entrar()">Entrar</button></div>
+  <div class="msg" id="msgLogin"></div>
+  <div class="demo" style="font-size:12px;color:var(--gris)">Operadores demo (clave <b>demo</b>):<br>
+    <button class="s" onclick="rapido('soporte')">soporte</button>
+    <button class="s" onclick="rapido('conciliacion')">conciliación</button>
+    <button class="s" onclick="rapido('cumplimiento')">oficial de cumplimiento</button>
+    <button class="s" onclick="rapido('admin')">admin</button></div>
+</section>
+
+<div id="app" hidden>
+  <nav id="tabs"></nav>
+  <main id="contenido"></main>
+</div>
+
+<script>
+const API = '/api/v1/backoffice';
+let token = sessionStorage.getItem('bo_token'), rol = sessionStorage.getItem('bo_rol'), nombre = sessionStorage.getItem('bo_nombre');
+const fmtBs = c => 'Bs ' + (c / 100).toLocaleString('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const fecha = s => s ? new Date(s).toLocaleString('es-VE') : '—';
+const hoy = () => new Date(Date.now() - 4 * 3600e3).toISOString().slice(0, 10);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const chipEstado = e => `<span class="chip ${['CONCILIADO','CAPTURADO','resuelto','cerrado','procesado','enviado','descartada','conciliado'].includes(e) ? 'ok'
+  : ['RECHAZADO','REVERSADO','CON_DIFERENCIA','alta','alto','escalada','con_diferencias','dif_monto','falta_suiche','falta_ahorra'].includes(e) ? 'bad' : 'warn'}">${esc(e)}</span>`;
+
+async function api(metodo, ruta, cuerpo) {
+  const r = await fetch(API + ruta, {method: metodo, headers: {'Content-Type': 'application/json', ...(token ? {Authorization: 'Bearer ' + token} : {})},
+    body: cuerpo ? JSON.stringify(cuerpo) : undefined});
+  const txt = await r.text(); const datos = txt ? JSON.parse(txt) : null;
+  if (r.status === 401 && ruta !== '/auth/login') { salir(); }
+  if (!r.ok) throw new Error(datos?.mensaje || ('Error ' + r.status));
+  return datos;
+}
+
+function rapido(u) { document.getElementById('correo').value = u + '@ahorramas.test'; document.getElementById('clave').value = 'demo'; entrar(); }
+async function entrar() {
+  try {
+    const s = await api('POST', '/auth/login', {correoCorporativo: correo.value, clave: clave.value});
+    token = s.accessToken; rol = s.rol; nombre = s.nombre;
+    sessionStorage.setItem('bo_token', token); sessionStorage.setItem('bo_rol', rol); sessionStorage.setItem('bo_nombre', nombre);
+    iniciar();
+  } catch (e) { msgLogin.textContent = e.message; }
+}
+function salir() { sessionStorage.clear(); token = null; location.reload(); }
+
+const PESTANAS = [
+  {id: 'pagos', t: 'Pagos', roles: null},
+  {id: 'conciliacion', t: 'Conciliación', roles: null},
+  {id: 'casos', t: 'Casos de soporte', roles: null},
+  {id: 'alertas', t: 'Alertas AML', roles: ['oficial_cumpl', 'admin']},
+  {id: 'reportes', t: 'Reportes regulatorios', roles: ['oficial_cumpl', 'admin']},
+  {id: 'limites', t: 'Límites', roles: null},
+  {id: 'auditoria', t: 'Auditoría', roles: null},
+];
+
+function iniciar() {
+  login.hidden = true; app.hidden = false;
+  yo.innerHTML = `${esc(nombre)} · <b>${esc(rol)}</b> · <a href="#" style="color:#fff" onclick="salir()">salir</a>`;
+  tabs.innerHTML = PESTANAS.filter(p => !p.roles || p.roles.includes(rol))
+    .map(p => `<button data-id="${p.id}" onclick="ir('${p.id}')">${p.t}</button>`).join('');
+  ir('pagos');
+}
+function ir(id) {
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('activo', b.dataset.id === id));
+  VISTAS[id]().catch(e => contenido.innerHTML = `<div class="tarjeta msg">${esc(e.message)}</div>`);
+}
+
+const VISTAS = {
+  async pagos(estado = '') {
+    const l = await api('GET', '/pagos' + (estado ? '?estado=' + estado : ''));
+    const conteo = l.reduce((a, p) => (a[p.estado] = (a[p.estado] || 0) + 1, a), {});
+    contenido.innerHTML = `<div class="kpis">${Object.entries(conteo).map(([k, v]) => `<div class="kpi">${chipEstado(k)}<b>${v}</b></div>`).join('')}</div><br>
+      <div class="tarjeta"><div class="fila"><select id="fEstado" onchange="VISTAS.pagos(this.value)">${['', 'PENDIENTE', 'AUTORIZADO', 'EN_VERIFICACION', 'CAPTURADO',
+        'CONCILIADO', 'RECHAZADO', 'REVERSADO', 'CON_DIFERENCIA'].map(e => `<option ${e === estado ? 'selected' : ''} value="${e}">${e || 'Todos los estados'}</option>`).join('')}</select></div>
+      <table><tr><th>#</th><th>Usuario</th><th>Estado</th><th>Monto</th><th>Comisión</th><th>Ref. suiche</th><th>Idempotency-Key</th><th>Creado</th></tr>
+      ${l.map(p => `<tr><td>${p.idPago}</td><td>${p.idUsuario}</td><td>${chipEstado(p.estado)}${p.motivoRechazo ? `<br><small>${esc(p.motivoRechazo)}</small>` : ''}</td>
+        <td>${fmtBs(p.montoCts)}</td><td>${fmtBs(p.comisionCts)}</td><td><code>${esc(p.referenciaSuiche || '—')}</code></td><td><code>${esc(p.claveIdempotencia)}</code></td>
+        <td>${fecha(p.fechaHoraCreacion)}</td></tr>`).join('')}</table></div>`;
+  },
+  async conciliacion(f) {
+    const dia = f || hoy();
+    const c = await api('GET', '/conciliaciones?fecha=' + dia);
+    contenido.innerHTML = `<div class="tarjeta"><div class="fila"><input type="date" id="fConc" value="${dia}" onchange="VISTAS.conciliacion(this.value)">
+      ${['conciliacion', 'admin'].includes(rol) ? `<button class="p" onclick="ejecutarConciliacion()">Ejecutar conciliación del día</button>` : ''}</div>
+      <div class="kpis"><div class="kpi">Archivo<b style="font-size:14px">${esc(c.nombreArchivo || 'sin archivo')}</b></div>
+      <div class="kpi">Estatus<b>${chipEstado(c.estatus)}</b></div><div class="kpi">Registros<b>${c.totalRegistros}</b></div>
+      <div class="kpi">Monto liquidado<b style="font-size:16px">${fmtBs(c.montoTotalCts)}</b></div>
+      <div class="kpi">Conciliados<b>${c.conciliados}</b></div><div class="kpi">Diferencias<b>${c.diferencias}</b></div></div>
+      ${c.hashArchivo ? `<p>SHA-256: <code>${esc(c.hashArchivo)}</code> ${c.hashValido ? '<span class="chip ok">íntegro</span>' : '<span class="chip bad">no coincide</span>'}</p>` : ''}
+      <table><tr><th>Pago</th><th>Línea</th><th>Resultado</th><th>Diferencia</th></tr>
+      ${c.resultados.map(r => `<tr><td>${r.idPago ?? '—'}</td><td>${r.linea ?? '—'}</td><td>${chipEstado(r.resultado)}</td><td>${r.diferenciaCts == null ? '' : fmtBs(r.diferenciaCts)}</td></tr>`).join('')}</table></div>`;
+  },
+  async casos() {
+    const l = await api('GET', '/casos');
+    contenido.innerHTML = `<div class="tarjeta"><table><tr><th>#</th><th>Tipo</th><th>Prioridad</th><th>Estatus</th><th>Descripción</th><th>Pago</th><th>Abierto</th><th></th></tr>
+      ${l.map(c => `<tr><td>${c.idCaso}</td><td>${esc(c.tipo)}</td><td>${chipEstado(c.prioridad)}</td><td>${chipEstado(c.estatus)}</td>
+        <td>${esc(c.descripcion)}${c.resolucion ? `<br><small><b>Resolución:</b> ${esc(c.resolucion)}</small>` : ''}</td><td>${c.idPago ?? '—'}</td><td>${fecha(c.fechaApertura)}</td>
+        <td>${['abierto', 'en_proceso'].includes(c.estatus) && rol !== 'oficial_cumpl' ? `<button class="s" onclick="resolverCaso(${c.idCaso})">Resolver</button>` : ''}</td></tr>`).join('')
+        || '<tr><td colspan="8">Sin casos</td></tr>'}</table></div>`;
+  },
+  async alertas() {
+    const l = await api('GET', '/alertas-aml');
+    contenido.innerHTML = `<div class="tarjeta"><table><tr><th>#</th><th>Usuario</th><th>Regla</th><th>Riesgo</th><th>Estatus</th><th>Pago</th><th>Fecha</th><th>Justificación</th><th></th></tr>
+      ${l.map(a => `<tr><td>${a.idAlerta}</td><td>${a.idUsuario}</td><td><code>${esc(a.reglaDisparada)}</code></td><td>${chipEstado(a.nivelRiesgo)}</td><td>${chipEstado(a.estatus)}</td>
+        <td>${a.idPago ?? '—'}</td><td>${fecha(a.fechaHora)}</td><td>${esc(a.justificacion || '')}</td>
+        <td>${['nueva', 'en_revision'].includes(a.estatus) ? `<button class="s" onclick="revisar(${a.idAlerta},'descartada')">Descartar</button>
+          <button class="s" onclick="revisar(${a.idAlerta},'escalada')">Escalar</button>` : a.estatus === 'escalada' ? `<button class="s" onclick="ros(${a.idAlerta})">Generar ROS</button>` : ''}</td></tr>`).join('')
+        || '<tr><td colspan="9">Sin alertas</td></tr>'}</table></div>`;
+  },
+  async reportes() {
+    const l = await api('GET', '/reportes-regulatorios');
+    contenido.innerHTML = `<div class="tarjeta"><table><tr><th>#</th><th>Tipo</th><th>Destino</th><th>Estatus</th><th>Generado</th><th>Acuse</th><th>Contenido</th><th></th></tr>
+      ${l.map(r => `<tr><td>${r.idReporteReg}</td><td>${esc(r.tipo)}</td><td>${esc(r.destinatario)}</td><td>${chipEstado(r.estatus)}</td><td>${fecha(r.fechaGeneracion)}</td>
+        <td><code>${esc(r.numeroAcuse || '—')}</code></td><td><code>${esc(r.contenido)}</code></td>
+        <td>${r.estatus === 'borrador' ? `<button class="s" onclick="enviar(${r.idReporteReg})">Enviar a ${esc(r.destinatario)}</button>` : ''}</td></tr>`).join('')
+        || '<tr><td colspan="8">Sin reportes</td></tr>'}</table></div>`;
+  },
+  async limites() {
+    contenido.innerHTML = `<div class="tarjeta"><div class="fila"><input id="lUsuario" type="number" placeholder="id de usuario"><button class="p" onclick="verLimite()">Consultar</button></div>
+      <div id="lRes"></div></div>`;
+  },
+  async auditoria() {
+    const a = await api('GET', '/auditoria?limite=150');
+    contenido.innerHTML = `<div class="tarjeta"><p>Cadena de hashes: ${a.cadenaIntegra ? '<span class="chip ok">íntegra — ningún evento fue alterado</span>' : '<span class="chip bad">ALTERADA</span>'}</p>
+      <table><tr><th>#</th><th>Fecha</th><th>Actor</th><th>Acción</th><th>Entidad</th><th>Detalle (sin PII)</th><th>Hash</th></tr>
+      ${a.eventos.map(e => `<tr><td>${e.idEvento}</td><td>${fecha(e.fechaHora)}</td><td>${esc(e.actorTipo)} ${esc(e.actorId || '')}</td><td><b>${esc(e.accion)}</b></td>
+        <td>${esc(e.entidad)} ${esc(e.idEntidad || '')}</td><td><code>${esc(e.detalle)}</code></td><td><code>${esc(e.hashActual.slice(0, 16))}…</code></td></tr>`).join('')}</table></div>`;
+  },
+};
+
+async function ejecutarConciliacion() {
+  try { await api('POST', '/conciliaciones', {fecha: fConc.value}); VISTAS.conciliacion(fConc.value); } catch (e) { alert(e.message); }
+}
+async function resolverCaso(id) {
+  const res = prompt('Resolución del caso #' + id); if (!res) return;
+  try { await api('PATCH', '/casos/' + id, {estatus: 'resuelto', resolucion: res}); ir('casos'); } catch (e) { alert(e.message); }
+}
+async function revisar(id, estatus) {
+  const j = prompt('Justificación (obligatoria)'); if (!j) return;
+  try { await api('PATCH', '/alertas-aml/' + id, {estatus, justificacion: j}); ir('alertas'); } catch (e) { alert(e.message); }
+}
+async function ros(id) { try { await api('POST', '/reportes-regulatorios', {idAlerta: id}); ir('reportes'); } catch (e) { alert(e.message); } }
+async function enviar(id) { try { await api('POST', `/reportes-regulatorios/${id}/enviar`); ir('reportes'); } catch (e) { alert(e.message); } }
+async function verLimite() {
+  const id = lUsuario.value; if (!id) return;
+  try {
+    const l = await api('GET', `/usuarios/${id}/limite`);
+    lRes.innerHTML = `<p>Vigente: <b>${fmtBs(l.montoMaxDiarioCts)}</b> diarios · <b>${l.maxOperacionesDiarias}</b> operaciones</p>
+      ${['oficial_cumpl', 'admin'].includes(rol) ? `<div class="fila"><input id="lMonto" type="number" placeholder="nuevo máximo diario (Bs)"><input id="lOps" type="number" placeholder="operaciones/día">
+      <input id="lMotivo" placeholder="motivo del cambio" style="flex:1"><button class="p" onclick="cambiarLimite(${id})">Cambiar</button></div>` : ''}`;
+  } catch (e) { lRes.innerHTML = `<p class="msg">${esc(e.message)}</p>`; }
+}
+async function cambiarLimite(id) {
+  try {
+    await api('PUT', `/usuarios/${id}/limite`, {montoMaxDiarioCts: Math.round(Number(lMonto.value) * 100), maxOperacionesDiarias: Number(lOps.value), motivoCambio: lMotivo.value});
+    verLimite();
+  } catch (e) { alert(e.message); }
+}
+if (token) iniciar();
+</script>
+</body>
+</html>

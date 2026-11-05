@@ -1,0 +1,19 @@
+# Java / Maven
+target/
+*.log
+backend/data/
+
+# Flutter / Dart
+mobile/**/build/
+mobile/**/.dart_tool/
+mobile/**/.flutter-plugins
+mobile/**/.flutter-plugins-dependencies
+mobile/**/*.iml
+
+# IDE / SO
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+__pycache__/

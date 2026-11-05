@@ -1,0 +1,107 @@
+# =====================================================================================
+# Ahorra+ · Núcleo (monolito modular) — configuración
+# Perfiles:
+#   local  (por defecto) -> PostgreSQL embebido (no requiere instalar nada) + modo demo
+#   docker              -> PostgreSQL externo (docker-compose)
+# =====================================================================================
+spring:
+  application:
+    name: ahorra-mas-nucleo
+  profiles:
+    default: local
+  datasource:
+    url: ${AHORRA_DB_URL:jdbc:postgresql://localhost:5432/ahorramas}
+    username: ${AHORRA_DB_USER:ahorramas}
+    password: ${AHORRA_DB_PASSWORD:ahorramas}
+  flyway:
+    default-schema: public
+  modulith:
+    events:
+      jdbc:
+        schema-initialization:
+          enabled: true
+      republish-outstanding-events-on-restart: true
+  jackson:
+    time-zone: America/Caracas
+  threads:
+    virtual:
+      enabled: true
+
+server:
+  port: 8080
+  error:
+    include-message: always
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,modulith
+
+ahorra:
+  zona-horaria: America/Caracas
+  seguridad:
+    # SOLO DESARROLLO. En producción vienen de la bóveda de secretos (Vault/KMS).
+    jwt-secreto: ${AHORRA_JWT_SECRETO:ZGV2LXNvbG8tYWhvcnJhLW1hcy1zZWNyZXRvLWp3dC0yNTYtYml0cy0wMDAwMDAwMA==}
+    minutos-sesion: 30
+    minutos-step-up: 5
+    dias-saldo-rapido: 30
+  cifrado:
+    clave-pii: ${AHORRA_CLAVE_PII:MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=}
+    clave-indice: ${AHORRA_CLAVE_INDICE:aW5kaWNlLWNpZWdvLWRldi1haG9ycmEtbWFzLTAwMDA=}
+    clave-boveda: ${AHORRA_CLAVE_BOVEDA:Ym92ZWRhLWRldi1haG9ycmEtbWFzLTAwMDAwMDAwMDA=}
+  almacen-objetos:
+    directorio: ${AHORRA_ALMACEN_DIR:./data/objetos-kyc}
+  integraciones:
+    # Hub de integraciones: todos los sistemas externos están simulados en mocks/simuladores
+    url-simuladores: ${AHORRA_SIMULADORES_URL:http://localhost:8090}
+    # URLs que abre el navegador del teléfono (emulador Android: http://10.0.2.2:8090 y http://10.0.2.2:8080)
+    url-publica-simuladores: ${AHORRA_SIMULADORES_URL_PUBLICA:http://localhost:8090}
+    url-publica-nucleo: ${AHORRA_URL_PUBLICA:http://localhost:8080}
+    client-id: ahorra-mas
+    huella-certificado-mtls: "SHA256:AHORRA-MAS-DEV-CLIENT-CERT"
+    timeout-conexion-ms: 3000
+    timeout-lectura-ms: 10000
+    timeout-suiche-ms: 30000
+  demo:
+    habilitado: false
+    exponer-otp: false
+  worker:
+    habilitado: true
+  pagos:
+    # Antifraude: máximo de intentos de pago por usuario en 10 minutos
+    max-intentos-ventana: 5
+
+logging:
+  level:
+    ve.impulsatech.ahorramas: INFO
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+ahorra:
+  base-datos-embebida:
+    habilitada: true
+    puerto: 15432   # fuera de los rangos que Windows (Hyper-V/WSL/Docker) suele reservar
+    directorio: ./data/pgdata
+  demo:
+    habilitado: true
+    exponer-otp: true
+  integraciones:
+    timeout-suiche-ms: 4000
+  pagos:
+    max-intentos-ventana: 30
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+ahorra:
+  demo:
+    habilitado: true
+    exponer-otp: true
+  integraciones:
+    timeout-suiche-ms: 4000
+  pagos:
+    max-intentos-ventana: 30

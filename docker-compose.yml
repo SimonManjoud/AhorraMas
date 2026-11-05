@@ -1,0 +1,42 @@
+# Ahorra+ MVP — PostgreSQL + simuladores + núcleo.
+#   docker compose up --build
+# App/backoffice: http://localhost:8080 · Consola de simuladores: http://localhost:8090
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: ahorramas
+      POSTGRES_USER: ahorramas
+      POSTGRES_PASSWORD: ahorramas
+      TZ: America/Caracas
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ahorramas -d ahorramas"]
+      interval: 5s
+      retries: 20
+
+  simuladores:
+    build: ./mocks/simuladores
+    ports: ["8090:8090"]
+
+  nucleo:
+    build: ./backend
+    depends_on:
+      postgres: { condition: service_healthy }
+      simuladores: { condition: service_started }
+    ports: ["8080:8080"]
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      AHORRA_DB_URL: jdbc:postgresql://postgres:5432/ahorramas
+      AHORRA_DB_USER: ahorramas
+      AHORRA_DB_PASSWORD: ahorramas
+      AHORRA_SIMULADORES_URL: http://simuladores:8090
+      # URLs que abre el navegador del teléfono/PC (cámbialas por la IP de tu red para un teléfono físico,
+      # o por http://10.0.2.2:8090 / :8080 para el emulador de Android)
+      AHORRA_SIMULADORES_URL_PUBLICA: http://localhost:8090
+      AHORRA_URL_PUBLICA: http://localhost:8080
+      AHORRA_ALMACEN_DIR: /app/data/objetos-kyc
+
+volumes:
+  pgdata:

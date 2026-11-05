@@ -1,0 +1,22 @@
+ahorra:
+  base-datos-embebida:
+    habilitada: true
+    puerto: 0
+    directorio: ""
+  demo:
+    habilitado: true
+    exponer-otp: true
+  worker:
+    habilitado: false
+  pagos:
+    max-intentos-ventana: 100000
+  almacen-objetos:
+    directorio: target/objetos-kyc-test
+spring:
+  modulith:
+    events:
+      republish-outstanding-events-on-restart: false
+logging:
+  level:
+    ve.impulsatech.ahorramas: WARN
+    org.springframework.modulith: WARN

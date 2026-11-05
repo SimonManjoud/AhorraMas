@@ -1,0 +1,14 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: ahorramas-simuladores
+
+simulador:
+  suiche:
+    # Retardo de la respuesta en el escenario de timeout (montoCts % 100 == 13).
+    retardo-timeout-ms: 8000
+  # Cédulas cuyos datos bancarios se generan al arrancar, para que sus referencias de
+  # cuentas y tarjetas existan desde el inicio (útil si el simulador se reinicia).
+  cedulas-demo: V12345678,V87654321
