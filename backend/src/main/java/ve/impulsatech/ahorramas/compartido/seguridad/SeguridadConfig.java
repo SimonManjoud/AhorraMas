@@ -26,6 +26,9 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 /**
  * Seguridad transversal (rol del API Gateway + validación de JWT del C4):
@@ -56,6 +59,23 @@ public class SeguridadConfig {
                         .authenticationEntryPoint((req, res, ex) -> escribirError(res, 401, "NO_AUTENTICADO", "Se requiere autenticación"))
                         .accessDeniedHandler((req, res, ex) -> escribirError(res, 403, "PROHIBIDO", "No tienes permiso para esta operación")));
         return http.build();
+    }
+
+    /**
+     * CORS solo para las rutas que consumen herramientas web de operación desde otro origen (el tablero de KPIs en
+     * {@code tablero-kpis/} y el modo demo). La app móvil no lo necesita y el resto del API sigue sin CORS.
+     */
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration c = new CorsConfiguration();
+        c.setAllowedOriginPatterns(List.of("*"));
+        c.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        c.setAllowedHeaders(List.of("Authorization", "Content-Type", "Idempotency-Key"));
+        c.setMaxAge(3600L);
+        UrlBasedCorsConfigurationSource fuente = new UrlBasedCorsConfigurationSource();
+        fuente.registerCorsConfiguration("/api/v1/backoffice/**", c);
+        fuente.registerCorsConfiguration("/api/v1/demo/**", c);
+        return fuente;
     }
 
     @Bean

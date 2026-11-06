@@ -5,8 +5,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import ve.impulsatech.ahorramas.backoffice.aplicacion.ServicioBackoffice;
 import ve.impulsatech.ahorramas.backoffice.aplicacion.puerto.salida.RepositorioBackoffice.*;
@@ -14,6 +16,7 @@ import ve.impulsatech.ahorramas.compartido.auditoria.Auditoria;
 import ve.impulsatech.ahorramas.compartido.dominio.Reloj;
 import ve.impulsatech.ahorramas.compartido.seguridad.UsuarioActual;
 import ve.impulsatech.ahorramas.identidad.api.UsuariosApi;
+import ve.impulsatech.ahorramas.pagos.api.KpisApi;
 import ve.impulsatech.ahorramas.pagos.api.PagosApi;
 
 /** API de operaciones del backoffice (contrato §9). Requiere token de operador; cada acción valida el rol. */
@@ -23,13 +26,15 @@ class BackofficeController {
 
     private final ServicioBackoffice backoffice;
     private final PagosApi pagos;
+    private final KpisApi kpis;
     private final UsuariosApi usuarios;
     private final Auditoria auditoria;
     private final Reloj reloj;
 
-    BackofficeController(ServicioBackoffice backoffice, PagosApi pagos, UsuariosApi usuarios, Auditoria auditoria, Reloj reloj) {
+    BackofficeController(ServicioBackoffice backoffice, PagosApi pagos, KpisApi kpis, UsuariosApi usuarios, Auditoria auditoria, Reloj reloj) {
         this.backoffice = backoffice;
         this.pagos = pagos;
+        this.kpis = kpis;
         this.usuarios = usuarios;
         this.auditoria = auditoria;
         this.reloj = reloj;
@@ -64,6 +69,18 @@ class BackofficeController {
     @GetMapping("/pagos")
     List<PagosApi.ResumenPago> pagos(@RequestParam(required = false) String estado) {
         return pagos.pagosPorEstado(estado, 200);
+    }
+
+    /**
+     * Tablero de KPIs del prototipo (tasa de aprobación, latencia p95, TPS, tasa de reversos). Cualquier rol de operador puede leerlo.
+     * {@code rango} = hoy | 1h | 24h | 7d | 30d (relativo al reloj del negocio) o bien {@code desde}/{@code hasta} ISO-8601.
+     */
+    @GetMapping("/kpis")
+    KpisApi.TableroKpis kpis(@RequestParam(defaultValue = "24h") String rango,
+                             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime desde,
+                             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime hasta,
+                             @RequestParam(defaultValue = "auto") String bucket) {
+        return kpis.kpis(rango, desde, hasta, bucket);
     }
 
     @PostMapping("/conciliaciones")

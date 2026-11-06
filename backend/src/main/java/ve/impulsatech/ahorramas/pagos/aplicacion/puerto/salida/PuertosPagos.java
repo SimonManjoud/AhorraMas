@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
+import ve.impulsatech.ahorramas.pagos.dominio.CalculadoraKpis;
 import ve.impulsatech.ahorramas.pagos.dominio.Conciliador;
 import ve.impulsatech.ahorramas.pagos.dominio.EstadoPago;
 import ve.impulsatech.ahorramas.pagos.dominio.PagoTdc;
@@ -95,6 +96,15 @@ public final class PuertosPagos {
         void insertarResultado(long idArchivo, LocalDate fecha, Conciliador.Resultado r);
 
         List<Conciliador.Resultado> resultados(long idArchivo);
+    }
+
+    /** Lecturas del ledger para el tablero de KPIs: pagos creados en la ventana, con sus mensajes al suiche y su historial. */
+    public interface Metricas {
+        List<CalculadoraKpis.Pago> pagosCreadosEntre(OffsetDateTime desde, OffsetDateTime hasta);
+
+        List<CalculadoraKpis.Mensaje> mensajesDePagosCreadosEntre(OffsetDateTime desde, OffsetDateTime hasta);
+
+        List<CalculadoraKpis.Transicion> transicionesDePagosCreadosEntre(OffsetDateTime desde, OffsetDateTime hasta);
     }
 
     public record Beneficiario(String titular, String ultimos4, String refTarjeta) {

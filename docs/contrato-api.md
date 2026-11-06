@@ -294,3 +294,11 @@ Roles: `soporte`, `conciliacion`, `oficial_cumpl`, `admin`. UI web mínima en `h
   `POST /backoffice/reportes-regulatorios/{id}/enviar` → `enviado` con `numeroAcuse`; `GET /backoffice/reportes-regulatorios`
 * `GET /backoffice/usuarios/{id}/limite`, `PUT /backoffice/usuarios/{id}/limite` `{"montoMaxDiarioCts","maxOperacionesDiarias","motivoCambio"}`
 * `GET /backoffice/auditoria?limite=100`
+* `GET /backoffice/kpis?rango=24h&bucket=auto` → tablero de KPIs del prototipo (cualquier rol de operador).
+  `rango` = `hoy|1h|24h|7d|30d` relativo al reloj del negocio, o `desde`/`hasta` ISO-8601 (máx. 92 días);
+  `bucket` = `auto|minuto|hora|dia` (máx. 2 000 intervalos). Respuesta `TableroKpis`: `ventana`, `resumen` y `resumenPrevio`
+  (`pagos`, `aprobados`, `rechazados`, `enCurso`, `reversados`, `timeouts`, `tasaAprobacionPb`, `tasaReversosPb`,
+  `tasaTimeoutsPb` en puntos básicos, `latenciaSuiche` y `latenciaExtremoAExtremo` con `p50Ms/p95Ms/p99Ms/maxMs`,
+  `pagosSegundoPico`, `pagosMinutoPico`, `mensajesSegundoPico`, `montoTotalCts`, `comisionTotalCts`), `latenciasPorTipo`,
+  `series` (un `Bucket` por intervalo), `estados`, `motivosRechazo`, `origenReversos`, `pagosRecientes`.
+  Definiciones en `pagos/dominio/CalculadoraKpis.java`; interfaz web en `tablero-kpis/`.

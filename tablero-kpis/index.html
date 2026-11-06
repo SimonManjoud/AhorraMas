@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tablero de KPIs · Ahorra+</title>
+  <meta name="description" content="KPIs técnicos medidos en el prototipo de Ahorra+: tasa de aprobación, latencia p95, TPS y tasa de reversos del pago de TDC contra el suiche.">
+  <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+  <header class="banda">
+    <div class="interior">
+      <div class="marca">
+        <div class="logo" aria-hidden="true">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-6 4 4 4-7 5 5"/><path d="M3 21h18"/></svg>
+        </div>
+        <div>
+          <h1>Tablero de KPIs del prototipo</h1>
+          <p>Ahorra+ · Pago de TDC interbancario · tasa de aprobación, latencia p95, TPS y tasa de reversos</p>
+        </div>
+      </div>
+      <div class="derecha">
+        <div class="estado-fuente" aria-live="polite"><span class="punto" id="punto-fuente"></span><span id="texto-fuente">Cargando…</span></div>
+        <div class="segmentado" id="modo" role="group" aria-label="Fuente de datos">
+          <button type="button" data-valor="demo" aria-pressed="true">Demo</button>
+          <button type="button" data-valor="vivo" aria-pressed="false">En vivo</button>
+        </div>
+        <button type="button" class="boton-icono" id="abrir-metas" title="Metas de referencia" aria-label="Editar metas de referencia">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg>
+        </button>
+        <button type="button" class="boton-icono" id="tema" title="Cambiar tema claro/oscuro" aria-label="Cambiar tema claro/oscuro">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg>
+        </button>
+        <button type="button" class="boton-icono" id="actualizar" title="Actualizar ahora" aria-label="Actualizar ahora">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="contenido">
+    <!-- panel de conexión al núcleo (modo en vivo) -->
+    <section class="tarjeta panel-vivo" id="panel-vivo" aria-label="Conexión al núcleo">
+      <form id="form-vivo">
+        <div class="campo"><label for="url-nucleo">URL del núcleo (Spring Boot)</label><input id="url-nucleo" type="url" placeholder="http://localhost:8080" required></div>
+        <div class="campo"><label for="correo">Correo corporativo del operador</label><input id="correo" type="email" value="admin@ahorramas.test" autocomplete="username" required></div>
+        <div class="campo"><label for="clave">Clave</label><input id="clave" type="password" value="demo" autocomplete="current-password" required></div>
+        <button class="boton" type="submit">Conectar y medir</button>
+      </form>
+      <div class="ayuda">
+        <span>Operadores semilla (clave <code>demo</code>):</span>
+        <button type="button" class="boton secundario pequeno acceso-rapido" data-correo="admin@ahorramas.test">admin</button>
+        <button type="button" class="boton secundario pequeno acceso-rapido" data-correo="conciliacion@ahorramas.test">conciliacion</button>
+        <button type="button" class="boton secundario pequeno acceso-rapido" data-correo="soporte@ahorramas.test">soporte</button>
+        <span>· Lee <code>GET /api/v1/backoffice/kpis</code>, calculado sobre <code>pagos.pago_tdc</code>, <code>historial_estado_pago</code> y <code>mensaje_suiche</code>.</span>
+        <span class="mensaje-error" id="error-vivo" role="alert"></span>
+      </div>
+    </section>
+
+    <!-- una sola fila de filtros: todo lo de abajo se calcula sobre la misma ventana -->
+    <section class="tarjeta filtros" aria-label="Filtros">
+      <div class="grupo"><span>Ventana</span>
+        <div class="pastillas" id="rango" role="group" aria-label="Ventana de tiempo">
+          <button type="button" data-valor="hoy">Hoy</button>
+          <button type="button" data-valor="1h">1 h</button>
+          <button type="button" data-valor="24h">24 h</button>
+          <button type="button" data-valor="7d">7 días</button>
+          <button type="button" data-valor="30d">30 días</button>
+        </div>
+      </div>
+      <div class="grupo"><span>Intervalo</span>
+        <div class="pastillas" id="bucket" role="group" aria-label="Granularidad">
+          <button type="button" data-valor="auto">Auto</button>
+          <button type="button" data-valor="minuto">Minuto</button>
+          <button type="button" data-valor="hora">Hora</button>
+          <button type="button" data-valor="dia">Día</button>
+        </div>
+      </div>
+      <div class="derecha">
+        <label class="conmutador"><input type="checkbox" id="auto"> Actualizar cada 30 s</label>
+        <span id="ultima-actualizacion"></span>
+      </div>
+    </section>
+    <p class="resumen-ventana" id="resumen-ventana" aria-live="polite"></p>
+
+    <!-- fila de KPIs -->
+    <section class="kpis" aria-label="Indicadores principales">
+      <article class="tarjeta kpi neutro" id="kpi-aprobacion">
+        <div class="cabeza"><span class="etiqueta"><span class="icono" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></span>Tasa de aprobación</span><span class="estado-pastilla"></span></div>
+        <div class="valor"><span class="cifra">—</span><small></small></div>
+        <p class="detalle"></p>
+        <div class="pie"><span class="delta"></span><span class="sparkline" aria-hidden="true"></span></div>
+        <div class="medidor" hidden></div>
+        <p class="meta"></p>
+      </article>
+      <article class="tarjeta kpi neutro" id="kpi-latencia">
+        <div class="cabeza"><span class="etiqueta"><span class="icono" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg></span>Latencia p95 del suiche</span><span class="estado-pastilla"></span></div>
+        <div class="valor"><span class="cifra">—</span><small></small></div>
+        <p class="detalle"></p>
+        <div class="pie"><span class="delta"></span><span class="sparkline" aria-hidden="true"></span></div>
+        <div class="medidor" hidden></div>
+        <p class="meta"></p>
+      </article>
+      <article class="tarjeta kpi neutro" id="kpi-tps">
+        <div class="cabeza"><span class="etiqueta"><span class="icono" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></span>Throughput (TPS)</span><span class="estado-pastilla"></span></div>
+        <div class="valor"><span class="cifra">—</span><small></small></div>
+        <p class="detalle"></p>
+        <div class="pie"><span class="delta"></span><span class="sparkline" aria-hidden="true"></span></div>
+        <div class="medidor" hidden></div>
+        <p class="meta"></p>
+      </article>
+      <article class="tarjeta kpi neutro" id="kpi-reversos">
+        <div class="cabeza"><span class="etiqueta"><span class="icono" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg></span>Tasa de reversos</span><span class="estado-pastilla"></span></div>
+        <div class="valor"><span class="cifra">—</span><small></small></div>
+        <p class="detalle"></p>
+        <div class="pie"><span class="delta"></span><span class="sparkline" aria-hidden="true"></span></div>
+        <div class="medidor" hidden></div>
+        <p class="meta"></p>
+      </article>
+    </section>
+
+    <div class="titulo-seccion"><span class="numero">1</span><div><h2>Aprobación</h2><p>Cuántos pagos aprobó el suiche y cómo evoluciona la tasa frente a la meta.</p></div></div>
+    <section class="rejilla">
+      <article class="tarjeta" id="g-aprobacion">
+        <header><div><h3>Tasa de aprobación por intervalo</h3><p class="sub">aprobados ÷ (aprobados + rechazados) en cada intervalo · los pagos en curso no cuentan</p></div>
+          <div class="alternar" role="group" aria-label="Vista"><button type="button" data-vista="grafico" aria-pressed="true">Gráfico</button><button type="button" data-vista="tabla" aria-pressed="false">Tabla</button></div></header>
+        <div class="leyenda"></div><div class="vista vista-grafico"></div><div class="vista vista-tabla" hidden></div>
+      </article>
+      <article class="tarjeta" id="g-resultados">
+        <header><div><h3>Resultado de los pagos por intervalo</h3><p class="sub">pagos creados en cada intervalo, por su resultado actual</p></div>
+          <div class="alternar" role="group" aria-label="Vista"><button type="button" data-vista="grafico" aria-pressed="true">Gráfico</button><button type="button" data-vista="tabla" aria-pressed="false">Tabla</button></div></header>
+        <div class="leyenda"></div><div class="vista vista-grafico"></div><div class="vista vista-tabla" hidden></div>
+      </article>
+    </section>
+
+    <div class="titulo-seccion"><span class="numero">2</span><div><h2>Latencia</h2><p>Tiempo de respuesta del suiche por mensaje; el p95 es el que define la experiencia de "pago en segundos".</p></div></div>
+    <section class="rejilla">
+      <article class="tarjeta" id="g-latencia">
+        <header><div><h3>Latencia del suiche por intervalo</h3><p class="sub">p95 y p50 de la ida y vuelta de todos los mensajes (autorización, captura, reverso, consulta)</p></div>
+          <div class="alternar" role="group" aria-label="Vista"><button type="button" data-vista="grafico" aria-pressed="true">Gráfico</button><button type="button" data-vista="tabla" aria-pressed="false">Tabla</button></div></header>
+        <div class="leyenda"></div><div class="vista vista-grafico"></div><div class="vista vista-tabla" hidden></div>
+      </article>
+      <article class="tarjeta" id="g-tipos">
+        <header><div><h3>Latencia p95 por tipo de mensaje</h3><p class="sub">ordenado de mayor a menor · el tooltip muestra p50, p99, máximo y timeouts</p></div>
+          <div class="alternar" role="group" aria-label="Vista"><button type="button" data-vista="grafico" aria-pressed="true">Gráfico</button><button type="button" data-vista="tabla" aria-pressed="false">Tabla</button></div></header>
+        <div class="leyenda"></div><div class="vista vista-grafico"></div><div class="vista vista-tabla" hidden></div>
+      </article>
+    </section>
+
+    <div class="titulo-seccion"><span class="numero">3</span><div><h2>Throughput</h2><p>Pagos que el núcleo acepta por unidad de tiempo; el pico por segundo es lo que mide una prueba de carga.</p></div></div>
+    <section class="rejilla">
+      <article class="tarjeta ancha" id="g-tps">
+        <header><div><h3>Pagos creados por intervalo</h3><p class="sub">TPS del intervalo = pagos ÷ segundos del intervalo · el pico marca el intervalo más cargado</p></div>
+          <div class="alternar" role="group" aria-label="Vista"><button type="button" data-vista="grafico" aria-pressed="true">Gráfico</button><button type="button" data-vista="tabla" aria-pressed="false">Tabla</button></div></header>
+        <div class="leyenda"></div><div class="vista vista-grafico"></div><div class="vista vista-tabla" hidden></div>
+      </article>
+    </section>
+
+    <div class="titulo-seccion"><span class="numero">4</span><div><h2>Reversos y rechazos</h2><p>Lo que se capturó y luego hubo que devolver, y por qué el suiche rechazó el resto.</p></div></div>
+    <section class="rejilla">
+      <article class="tarjeta" id="g-reversos">
+        <header><div><h3>Pagos reversados por intervalo</h3><p class="sub">atribuidos al intervalo en que se creó el pago · la tabla incluye la tasa por intervalo</p></div>
+          <div class="alternar" role="group" aria-label="Vista"><button type="button" data-vista="grafico" aria-pressed="true">Gráfico</button><button type="button" data-vista="tabla" aria-pressed="false">Tabla</button></div></header>
+        <div class="leyenda"></div><div class="vista vista-grafico"></div><div class="vista vista-tabla" hidden></div>
+      </article>
+      <article class="tarjeta" id="t-causas">
+        <header><div><h3>Origen de los reversos y motivos de rechazo</h3><p class="sub">el origen sale del historial de estados (estado anterior a REVERSADO); el motivo, del pago rechazado</p></div>
+          <div class="alternar" role="group" aria-label="Vista"><button type="button" data-vista="grafico" aria-pressed="true">Gráfico</button><button type="button" data-vista="tabla" aria-pressed="false">Tabla</button></div></header>
+        <div class="leyenda"></div>
+        <div class="vista vista-grafico dos-columnas">
+          <div><h4>Origen del reverso</h4><div id="g-origen"></div></div>
+          <div><h4>Motivo del rechazo</h4><div id="g-motivos"></div></div>
+        </div>
+        <div class="vista vista-tabla" hidden></div>
+      </article>
+    </section>
+
+    <div class="titulo-seccion"><span class="numero">5</span><div><h2>Estado del ledger</h2><p>Cómo se reparten los pagos de la ventana entre los estados de la máquina R-14, y los últimos pagos con su escenario.</p></div></div>
+    <section class="rejilla">
+      <article class="tarjeta ancha" id="g-estados">
+        <header><div><h3>Distribución de estados</h3><p class="sub">PENDIENTE → AUTORIZADO → CAPTURADO → CONCILIADO · alternos: RECHAZADO, EN_VERIFICACION, REVERSADO, CON_DIFERENCIA</p></div>
+          <div class="alternar" role="group" aria-label="Vista"><button type="button" data-vista="grafico" aria-pressed="true">Gráfico</button><button type="button" data-vista="tabla" aria-pressed="false">Tabla</button></div></header>
+        <div class="vista vista-grafico"></div>
+        <div class="segmentada-leyenda"></div>
+        <div class="vista vista-tabla" hidden></div>
+      </article>
+      <article class="tarjeta ancha" id="t-recientes">
+        <header><div><h3>Últimos pagos de la ventana</h3><p class="sub">escenario = monto % 100, el código con el que el simulador del suiche decide el comportamiento (13 timeout · 51 fondos · 77 captura rechazada · 98/99 diferencia en liquidación)</p></div></header>
+        <div class="vista vista-tabla"></div>
+      </article>
+    </section>
+
+    <div class="titulo-seccion"><span class="numero">6</span><div><h2>Cómo se mide cada KPI</h2><p>Definiciones exactas, iguales en modo demo y en vivo (<code>CalculadoraKpis.java</code> ⇄ <code>datos-demo.js</code>).</p></div></div>
+    <section class="definiciones">
+      <article class="tarjeta definicion">
+        <h3>Tasa de aprobación</h3>
+        <div class="formula">aprobados ÷ (aprobados + rechazados) × 100</div>
+        <ul>
+          <li><b>Aprobado</b>: el suiche aprobó la captura → <code>CAPTURADO</code>, <code>CONCILIADO</code>, <code>CON_DIFERENCIA</code> o <code>REVERSADO</code> con fecha de captura.</li>
+          <li><b>Rechazado</b>: <code>RECHAZADO</code> (autorización 51/91, captura 05) o <code>REVERSADO</code> sin captura.</li>
+          <li><b>Excluidos</b>: pagos en curso (<code>PENDIENTE</code>, <code>AUTORIZADO</code>, <code>EN_VERIFICACION</code>) hasta que se resuelvan.</li>
+          <li>Se atribuye cada pago al intervalo de su creación; el resumen usa toda la ventana.</li>
+        </ul>
+        <p class="fuente">Fuente: <code>pagos.pago_tdc.estado_actual</code>, <code>fecha_hora_captura</code>. Meta de referencia editable (⊙ arriba a la derecha).</p>
+      </article>
+      <article class="tarjeta definicion">
+        <h3>Latencia p95</h3>
+        <div class="formula">p95 = valor en la posición ⌈0,95 · n⌉ de las latencias ordenadas · latencia = fecha_hora_respuesta − fecha_hora_envio</div>
+        <ul>
+          <li>Una muestra por mensaje al suiche: autorización, captura, reverso y consulta de estado.</li>
+          <li><b>Timeouts</b> (sin respuesta) no entran en el percentil: se cuentan aparte y se reportan como tasa de timeouts.</li>
+          <li>Percentil por rango más cercano (<i>nearest-rank</i>): con 20 muestras, p95 es la 19.ª.</li>
+          <li>También se mide la latencia <b>extremo a extremo</b>: creación del pago → primer estado de resultado (en la tabla de últimos pagos, "Lat. total").</li>
+        </ul>
+        <p class="fuente">Fuente: <code>pagos.mensaje_suiche</code> (inmutable por trigger), <code>historial_estado_pago</code>.</p>
+      </article>
+      <article class="tarjeta definicion">
+        <h3>TPS (transacciones por segundo)</h3>
+        <div class="formula">TPS promedio = pagos creados ÷ segundos de la ventana · TPS pico = máx. pagos creados en un mismo segundo</div>
+        <ul>
+          <li>Se cuenta la creación del pago (<code>POST /pagos-tdc</code> aceptado tras los controles de idempotencia, límite y antifraude).</li>
+          <li>El pico por segundo es lo que una prueba de carga compara con la capacidad; el promedio de 24 h siempre será bajo en un prototipo.</li>
+          <li>Además: pico de pagos por minuto y pico de mensajes por segundo hacia el suiche (presión real sobre la integración).</li>
+          <li>En modo demo hay una ráfaga de 36 pagos en 9 s cada día a las 15:12 para ilustrar el pico.</li>
+        </ul>
+        <p class="fuente">Fuente: <code>pagos.pago_tdc.fecha_hora_creacion</code>, <code>mensaje_suiche.fecha_hora_envio</code>.</p>
+      </article>
+      <article class="tarjeta definicion">
+        <h3>Tasa de reversos</h3>
+        <div class="formula">reversados ÷ aprobados (capturados) × 100</div>
+        <ul>
+          <li>Solo puede reversarse lo que se capturó; por eso el denominador son los pagos aprobados, no todos los pagos.</li>
+          <li><b>Origen</b> (del historial): <code>CON_DIFERENCIA → REVERSADO</code> (conciliación R-19), <code>EN_VERIFICACION → REVERSADO</code> (el suiche lo informó), <code>CAPTURADO → REVERSADO</code>.</li>
+          <li>La autorización liberada tras una captura rechazada (escenario 77) termina en <code>RECHAZADO</code>: no es un reverso de dinero y no cuenta aquí.</li>
+          <li>Un reverso nunca cobra comisión (R-17); el total de comisiones del resumen ya lo descuenta.</li>
+        </ul>
+        <p class="fuente">Fuente: <code>pagos.pago_tdc</code>, <code>historial_estado_pago</code>, <code>mensaje_suiche</code> (tipo <code>reverso</code>).</p>
+      </article>
+    </section>
+
+    <p class="pie-pagina">KPIs técnicos del prototipo medidos contra el suiche simulado (<code>mocks/simuladores</code>). Son métricas de ingeniería del MVP, no indicadores de producción ni asesoría financiera.<br>
+      Paleta y marcas según el método dataviz (3 colores categóricos validados para daltonismo, rampa ordinal azul para percentiles, colores de estado solo cuando significan bien/mal). Cada gráfico tiene vista de tabla y soporte de teclado.</p>
+  </main>
+
+  <dialog id="dialogo-metas">
+    <form method="dialog">
+      <h2>Metas de referencia</h2>
+      <p>Umbrales con los que el tablero colorea cada KPI. Son objetivos del prototipo, no compromisos regulatorios. Se guardan solo en este navegador.</p>
+      <div class="campos">
+        <div class="campo"><label for="meta-aprobacion">Tasa de aprobación mínima (%)</label><input id="meta-aprobacion" type="number" min="0" max="100" step="0.5"></div>
+        <div class="campo"><label for="meta-p95">Latencia p95 máxima (ms)</label><input id="meta-p95" type="number" min="1" step="10"></div>
+        <div class="campo"><label for="meta-tps">Capacidad de referencia (TPS)</label><input id="meta-tps" type="number" min="1" step="1"></div>
+        <div class="campo"><label for="meta-reversos">Tasa de reversos máxima (%)</label><input id="meta-reversos" type="number" min="0" max="100" step="0.1"></div>
+      </div>
+      <div class="acciones">
+        <button type="button" class="boton secundario" id="restaurar-metas">Restaurar</button>
+        <button type="submit" class="boton secundario" value="cancel">Cancelar</button>
+        <button type="button" class="boton" id="guardar-metas">Guardar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="graficos.js"></script>
+  <script src="datos-demo.js"></script>
+  <script src="tablero.js"></script>
+</body>
+</html>

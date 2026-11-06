@@ -14,6 +14,7 @@ colchón, Espejo de Impacto y Sello de compromiso).
 | `mocks/simuladores/` | **Simuladores** de los sistemas externos: bancos (Open Banking OAuth2), suiche interbancario, BCV, plataformas cripto, KYC, LLM y notificaciones |
 | `docs/` | `arquitectura.md` (decisiones, C4 → código, reglas R-01…R-23), `contrato-api.md` (app ↔ núcleo), `contrato-simuladores.md` (núcleo ↔ externos) |
 | `scripts/prueba_e2e.py` | Prueba de punta a punta contra los servicios en ejecución |
+| `tablero-kpis/` | **Tablero de KPIs del prototipo** (tasa de aprobación, latencia p95, TPS, tasa de reversos): HTML/JS sin dependencias, modo demo y modo en vivo contra `GET /api/v1/backoffice/kpis` |
 | `Documentos/` | Documento de concepto y modelos C4 |
 
 ## Arranque rápido (sin instalar PostgreSQL ni Docker)
@@ -30,7 +31,10 @@ cd backend && ./mvnw spring-boot:run
 # 3) Comprobar todo de punta a punta
 python scripts/prueba_e2e.py
 
-# 4) App móvil
+# 4) Tablero de KPIs del prototipo  →  http://localhost:8070  (modo demo sin backend; "En vivo" con admin@ahorramas.test / demo)
+cd tablero-kpis && python -m http.server 8070
+
+# 5) App móvil
 cd mobile/ahorra_mas_app
 flutter run                                   # contra el núcleo (emulador Android usa 10.0.2.2)
 flutter run --dart-define=FAKE_API=true       # demo sin backend
