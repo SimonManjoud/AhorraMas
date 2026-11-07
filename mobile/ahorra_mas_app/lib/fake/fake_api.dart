@@ -74,6 +74,10 @@ class FakeApi
   String? _tokenSaldo;
   String? _huellaSaldo;
 
+  /// En la demo web la API falsa se recrea al recargar; un token `saldo-demo-` emitido antes se
+  /// sigue aceptando (como haría el servidor real) salvo que se haya desactivado en esta sesión.
+  bool _saldoAnulado = false;
+
   final List<Institucion> _instituciones = const [
     Institucion(idInstitucion: 1, codigo: '0901', nombre: 'Banco Ávila', tipo: 'banco', estatusIntegracion: 'sandbox'),
     Institucion(idInstitucion: 2, codigo: '0902', nombre: 'Banco Orinoco', tipo: 'banco', estatusIntegracion: 'sandbox'),
@@ -134,6 +138,7 @@ class FakeApi
         ultimos4: '7781',
         titularConfirmado: 'MARIA PEREZ',
         esPropia: true,
+        marca: 'mastercard',
         estadoCuenta: EstadoCuentaTdc(
           fechaCorte: _hoy.subtract(const Duration(days: 6)),
           fechaLimitePago: _hoy.add(const Duration(days: 9)),
@@ -149,6 +154,7 @@ class FakeApi
         alias: 'Visa Ávila',
         titularConfirmado: 'MARIA PEREZ',
         esPropia: true,
+        marca: 'visa',
         estadoCuenta: EstadoCuentaTdc(
           fechaCorte: _hoy.subtract(const Duration(days: 12)),
           fechaLimitePago: _hoy.add(const Duration(days: 2)),
@@ -416,6 +422,7 @@ class FakeApi
       if (_fallosPin >= 3) {
         _fallosPin = 0;
         _tokenSaldo = null;
+        _saldoAnulado = true;
         throw _err(401, 'NO_AUTENTICADO',
             'Bloqueamos este dispositivo por 3 intentos fallidos. Contacta a soporte.');
       }
@@ -493,33 +500,46 @@ class FakeApi
   Future<TokenSaldo> activarSaldoRapido(String stepUpToken) async {
     await _esperar();
     _requiereStepUp(stepUpToken, NivelStepUp.pin);
-    _tokenSaldo = 'saldo-${_id()}';
+    _tokenSaldo = 'saldo-demo-${_id()}';
     _huellaSaldo = null;
+    _saldoAnulado = false;
     return TokenSaldo(tokenSaldo: _tokenSaldo!, expiraEn: _ahora.add(const Duration(days: 90)));
   }
 
   @override
   Future<SaldoRapido> consultarSaldoRapido({required String tokenSaldo, required String huella}) async {
     await _esperar();
+    final recordado = _tokenSaldo == null && !_saldoAnulado && tokenSaldo.startsWith('saldo-demo-');
+    if (recordado) _tokenSaldo = tokenSaldo;
     if (_tokenSaldo == null || tokenSaldo != _tokenSaldo) {
       throw _err(401, 'NO_AUTENTICADO', 'El saldo rápido fue desactivado.');
     }
     _huellaSaldo ??= huella;
     if (_huellaSaldo != huella) throw _err(403, 'PROHIBIDO', 'Dispositivo no autorizado.');
     final c = _construirConsolidado();
-    return SaldoRapido(totalBsCts: c.totalBsCts, totalUsdCts: c.totalUsdCts, actualizadoEn: c.actualizadoEn);
+    return SaldoRapido(
+      totalBsCts: c.totalBsCts,
+      totalUsdCts: c.totalUsdCts,
+      actualizadoEn: c.actualizadoEn,
+      bancos: [
+        for (final i in c.instituciones)
+          SaldoBanco(nombre: i.nombre, tipo: i.tipo, totalBsCts: i.totalBsCts, totalUsdCts: i.totalUsdCts),
+      ],
+    );
   }
 
   @override
   Future<void> desactivarSaldoRapido() async {
     await _esperar();
     _tokenSaldo = null;
+    _saldoAnulado = true;
   }
 
   @override
   Future<void> revocarDispositivoActual(String motivo) async {
     await _esperar();
     _tokenSaldo = null;
+    _saldoAnulado = true;
     _actual = null;
   }
 

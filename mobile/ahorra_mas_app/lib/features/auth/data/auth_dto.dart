@@ -79,5 +79,6 @@ class AuthDto {
         totalBsCts: j.entero('totalBsCts'),
         totalUsdCts: j.entero('totalUsdCts'),
         actualizadoEn: j.fecha('actualizadoEn'),
+        bancos: j.lista('bancos', SaldoBanco.desdeJson),
       );
 }

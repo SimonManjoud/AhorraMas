@@ -206,7 +206,7 @@ public class BancoService {
                 long saldoTotal = 5_000_000 + r.nextLong(20_000_000);
                 tarjetas.add(new TarjetaSim("TDC-" + inst.codigo() + "-" + Semilla.hex(4, "tdc", inst.codigo(), cedula),
                         inst.codigo(), cedula, cuatroDigitos(r), titular, corte, corte.plusDays(15),
-                        saldoTotal, saldoTotal / 10));
+                        saldoTotal, saldoTotal / 10, inst.codigo().equals("0902") ? "mastercard" : "visa"));
             }
         } else {
             cuentas.add(new CuentaSim(ref(inst, cedula, "BI"), inst.codigo(), cedula, cuatroDigitos(r),
@@ -399,6 +399,7 @@ public class BancoService {
         final String cedula;
         final String ultimos4;
         final String titular;
+        final String marca;
         final LocalDate fechaCorte;
         final LocalDate fechaLimitePago;
         private long saldoTotalCts;
@@ -406,7 +407,8 @@ public class BancoService {
         private long pagadoCts;
 
         TarjetaSim(String ref, String codigo, String cedula, String ultimos4, String titular, LocalDate fechaCorte,
-                   LocalDate fechaLimitePago, long saldoTotalCts, long pagoMinimoCts) {
+                   LocalDate fechaLimitePago, long saldoTotalCts, long pagoMinimoCts, String marca) {
+            this.marca = marca;
             this.ref = ref;
             this.codigo = codigo;
             this.cedula = cedula;
@@ -442,7 +444,7 @@ public class BancoService {
         synchronized Tarjeta aDto() {
             long minimo = Math.max(0, Math.min(pagoMinimoOriginalCts - pagadoCts, saldoTotalCts));
             return new Tarjeta(ref, ultimos4, titular, new EstadoCuenta(fechaCorte.toString(),
-                    fechaLimitePago.toString(), saldoTotalCts, minimo));
+                    fechaLimitePago.toString(), saldoTotalCts, minimo), marca);
         }
     }
 }

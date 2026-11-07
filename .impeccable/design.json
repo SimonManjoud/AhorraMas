@@ -1,0 +1,578 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-07T20:41:55.114Z",
+  "title": "Design System: Ahorra+",
+  "extensions": {
+    "colorMeta": {
+      "vino-tapa": {
+        "role": "primary",
+        "displayName": "Vino Tapa",
+        "canonical": "#5C1726",
+        "purpose": "Tapa: tarjeta de posición global, botón primario, marcas de racha.",
+        "tonalRamp": [
+          "#3d0f19",
+          "#6e1c2e",
+          "#9f2842",
+          "#cd3758",
+          "#d96881",
+          "#e699aa",
+          "#f1c6cf",
+          "#faebee"
+        ]
+      },
+      "vino-hondo": {
+        "role": "primary",
+        "displayName": "Vino Hondo",
+        "canonical": "#43101C",
+        "purpose": "Presionado del primario.",
+        "tonalRamp": [
+          "#3e0f1a",
+          "#6f1b2e",
+          "#a12643",
+          "#cf3559",
+          "#db6782",
+          "#e698ab",
+          "#f1c5d0",
+          "#faeaee"
+        ]
+      },
+      "sobre-tapa": {
+        "role": "primary",
+        "displayName": "Sobre Tapa",
+        "canonical": "#F7ECEE",
+        "purpose": "Texto sobre la tapa.",
+        "tonalRamp": [
+          "#36171c",
+          "#612933",
+          "#8c3b4a",
+          "#b54f62",
+          "#c77a88",
+          "#d9a5af",
+          "#eacdd2",
+          "#f7edef"
+        ]
+      },
+      "sobre-tapa-tenue": {
+        "role": "primary",
+        "displayName": "Sobre Tapa Tenue",
+        "canonical": "#DDBBC3",
+        "purpose": "Texto secundario sobre la tapa.",
+        "tonalRamp": [
+          "#33191f",
+          "#5c2e39",
+          "#854252",
+          "#ac586c",
+          "#c08190",
+          "#d5aab4",
+          "#e7cfd5",
+          "#f7eef0"
+        ]
+      },
+      "rosa-vino": {
+        "role": "primary",
+        "displayName": "Rosa Vino",
+        "canonical": "#EBD3D8",
+        "purpose": "Indicador de navegación y elementos seleccionados.",
+        "tonalRamp": [
+          "#35181e",
+          "#5f2b36",
+          "#893e4e",
+          "#b15367",
+          "#c47d8c",
+          "#d7a7b1",
+          "#e9ced3",
+          "#f7edef"
+        ]
+      },
+      "sello-violeta": {
+        "role": "tertiary",
+        "displayName": "Sello Violeta",
+        "canonical": "#5A3E9E",
+        "purpose": "Insignia del Sello de compromiso; una por vista.",
+        "tonalRamp": [
+          "#1f1637",
+          "#382763",
+          "#51388f",
+          "#6b4cb9",
+          "#8f77ca",
+          "#b4a3db",
+          "#d5cceb",
+          "#f0edf8"
+        ]
+      },
+      "hoja": {
+        "role": "neutral",
+        "displayName": "Hoja",
+        "canonical": "#EEF2EE",
+        "purpose": "Fondo liso de la app.",
+        "tonalRamp": [
+          "#212b21",
+          "#3c4e3c",
+          "#567156",
+          "#719371",
+          "#94ad94",
+          "#b7c8b7",
+          "#d7e0d7",
+          "#f1f4f1"
+        ]
+      },
+      "hoja-honda": {
+        "role": "neutral",
+        "displayName": "Hoja Honda",
+        "canonical": "#E1E8E2",
+        "purpose": "Pistas de progreso y rellenos de icono.",
+        "tonalRamp": [
+          "#212b23",
+          "#3c4e3e",
+          "#56715a",
+          "#729376",
+          "#94ad98",
+          "#b7c8b9",
+          "#d7e0d8",
+          "#f1f4f1"
+        ]
+      },
+      "lamina": {
+        "role": "neutral",
+        "displayName": "Lámina",
+        "canonical": "#FBFCFA",
+        "purpose": "Láminas, campos, teclas del PIN y navegación.",
+        "tonalRamp": [
+          "#26301d",
+          "#455634",
+          "#637c4b",
+          "#82a163",
+          "#a1b889",
+          "#bfcfaf",
+          "#dbe4d2",
+          "#f2f5ef"
+        ]
+      },
+      "regla": {
+        "role": "neutral",
+        "displayName": "Regla",
+        "canonical": "#B4C2B7",
+        "purpose": "Separadores marcados.",
+        "tonalRamp": [
+          "#222a24",
+          "#3e4c41",
+          "#596e5e",
+          "#758f7b",
+          "#97aa9b",
+          "#b9c6bb",
+          "#d8dfd9",
+          "#f1f4f2"
+        ]
+      },
+      "regla-suave": {
+        "role": "neutral",
+        "displayName": "Regla Suave",
+        "canonical": "#DCE4DD",
+        "purpose": "Separadores finos y bordes de campo.",
+        "tonalRamp": [
+          "#212b23",
+          "#3c4e3e",
+          "#57705a",
+          "#729276",
+          "#94ad98",
+          "#b7c7b9",
+          "#d7e0d8",
+          "#f1f4f1"
+        ]
+      },
+      "tinta": {
+        "role": "neutral",
+        "displayName": "Tinta",
+        "canonical": "#1B1F1C",
+        "purpose": "Texto principal.",
+        "tonalRamp": [
+          "#242925",
+          "#404a42",
+          "#5d6a60",
+          "#798b7e",
+          "#9aa79d",
+          "#bbc4bd",
+          "#d9deda",
+          "#f1f3f2"
+        ]
+      },
+      "tinta-gris": {
+        "role": "neutral",
+        "displayName": "Tinta Gris",
+        "canonical": "#47524A",
+        "purpose": "Texto secundario.",
+        "tonalRamp": [
+          "#242925",
+          "#404a43",
+          "#5c6b60",
+          "#798b7e",
+          "#9aa79e",
+          "#bbc4bd",
+          "#d9deda",
+          "#f1f3f2"
+        ]
+      },
+      "tinta-roja": {
+        "role": "error",
+        "displayName": "Tinta Roja",
+        "canonical": "#A3271F",
+        "purpose": "Errores y fechas urgentes.",
+        "tonalRamp": [
+          "#400f0c",
+          "#741c16",
+          "#a72820",
+          "#d7372d",
+          "#e16860",
+          "#eb9994",
+          "#f4c6c3",
+          "#fbebea"
+        ]
+      },
+      "tinta-verde": {
+        "role": "success",
+        "displayName": "Tinta Verde",
+        "canonical": "#2F6B45",
+        "purpose": "Confirmaciones.",
+        "tonalRamp": [
+          "#173522",
+          "#2a603e",
+          "#3d8a59",
+          "#51b375",
+          "#7cc597",
+          "#a6d8b9",
+          "#cde9d8",
+          "#edf7f1"
+        ]
+      },
+      "serie-1": {
+        "role": "chart",
+        "displayName": "Serie 1 · azul",
+        "canonical": "#2A78D6",
+        "purpose": "Gráficos, orden fijo.",
+        "tonalRamp": [
+          "#0c2440",
+          "#164173",
+          "#205da7",
+          "#2d7ad7",
+          "#619be1",
+          "#94bbea",
+          "#c3d9f3",
+          "#eaf1fb"
+        ]
+      },
+      "serie-2": {
+        "role": "chart",
+        "displayName": "Serie 2 · naranja",
+        "canonical": "#EB6834",
+        "purpose": "Gráficos, orden fijo.",
+        "tonalRamp": [
+          "#461907",
+          "#7d2c0c",
+          "#b54012",
+          "#e9561c",
+          "#ee7f53",
+          "#f4a98b",
+          "#f9cfbe",
+          "#fdeee8"
+        ]
+      },
+      "serie-3": {
+        "role": "chart",
+        "displayName": "Serie 3 · aguamarina",
+        "canonical": "#1BAF7A",
+        "purpose": "Gráficos, orden fijo.",
+        "tonalRamp": [
+          "#0a422e",
+          "#127753",
+          "#1bac78",
+          "#27de9c",
+          "#5ce6b4",
+          "#91eecd",
+          "#c1f5e3",
+          "#e9fcf5"
+        ]
+      },
+      "serie-4": {
+        "role": "chart",
+        "displayName": "Serie 4 · ámbar",
+        "canonical": "#EDA100",
+        "purpose": "Gráficos, orden fijo.",
+        "tonalRamp": [
+          "#4d3400",
+          "#8a5e00",
+          "#c78700",
+          "#ffaf05",
+          "#ffc242",
+          "#ffd680",
+          "#ffe8b8",
+          "#fff7e5"
+        ]
+      },
+      "serie-5": {
+        "role": "chart",
+        "displayName": "Serie 5 · rosa",
+        "canonical": "#E87BA4",
+        "purpose": "Gráficos, orden fijo.",
+        "tonalRamp": [
+          "#410b20",
+          "#751439",
+          "#a91e52",
+          "#da2a6c",
+          "#e35e90",
+          "#ec92b4",
+          "#f4c2d5",
+          "#fbe9f0"
+        ]
+      },
+      "serie-6": {
+        "role": "chart",
+        "displayName": "Serie 6 · verde",
+        "canonical": "#008300",
+        "purpose": "Gráficos, orden fijo.",
+        "tonalRamp": [
+          "#004d00",
+          "#008a00",
+          "#00c700",
+          "#05ff05",
+          "#42ff42",
+          "#80ff80",
+          "#b8ffb8",
+          "#e5ffe5"
+        ]
+      },
+      "serie-7": {
+        "role": "chart",
+        "displayName": "Serie 7 · violeta",
+        "canonical": "#6250D6",
+        "purpose": "Gráficos, orden fijo.",
+        "tonalRamp": [
+          "#150f3e",
+          "#261a70",
+          "#3626a1",
+          "#4935d0",
+          "#7666db",
+          "#a298e7",
+          "#cbc5f1",
+          "#eceafa"
+        ]
+      },
+      "serie-8": {
+        "role": "chart",
+        "displayName": "Serie 8 · rojo",
+        "canonical": "#E34948",
+        "purpose": "Gráficos, orden fijo.",
+        "tonalRamp": [
+          "#420b0a",
+          "#771312",
+          "#ad1b1a",
+          "#de2726",
+          "#e65c5b",
+          "#ee9190",
+          "#f6c1c1",
+          "#fce9e9"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Total en USD de la tapa; uno por pantalla."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Saludos y \"Hoy toca apartar\"."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Títulos de lámina, metas y barra superior."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Explicaciones y avisos."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Tipo de cuenta y encabezados de bloque, en mayúsculas y minúsculas."
+      },
+      "cifra": {
+        "displayName": "Cifra",
+        "purpose": "Montos, tasas, porcentajes y fechas en Archivo tabular."
+      }
+    },
+    "shadows": [
+      {
+        "name": "nav",
+        "value": "0 -2px 16px rgba(0,0,0,.08)"
+      },
+      {
+        "name": "tarjeta-credito",
+        "value": "0 10px 18px rgba(0,0,0,.2), 0 2px 4px rgba(0,0,0,.13)"
+      }
+    ],
+    "motion": [
+      {
+        "name": "barrido-dona",
+        "value": "900ms cubic-bezier(0.33, 1, 0.68, 1)",
+        "purpose": "La dona se dibuja desde las 12 en sentido horario."
+      },
+      {
+        "name": "seleccion-porcion",
+        "value": "280ms cubic-bezier(0.33, 1, 0.68, 1)",
+        "purpose": "La porción tocada crece y las demás se atenúan."
+      },
+      {
+        "name": "giro-tarjeta",
+        "value": "700ms cubic-bezier(0.65, 0, 0.35, 1)",
+        "purpose": "La tarjeta gira en Y para mostrar el reverso."
+      },
+      {
+        "name": "paso-login",
+        "value": "260ms cubic-bezier(0.33, 1, 0.68, 1)",
+        "purpose": "Del paso cédula al paso PIN con fundido y desplazamiento."
+      },
+      {
+        "name": "aparece-sello",
+        "value": "240ms cubic-bezier(0.34, 1.56, 0.64, 1)",
+        "purpose": "La insignia del sello aparece con leve rebote."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "compact",
+        "value": "<600dp"
+      },
+      {
+        "name": "medium",
+        "value": "600-839dp"
+      },
+      {
+        "name": "expanded",
+        "value": ">=840dp"
+      }
+    ],
+    "darkScheme": {
+      "hoja": "#111613",
+      "lamina": "#1A211C",
+      "hoja-honda": "#232B25",
+      "regla-suave": "#2A322C",
+      "regla": "#4A574D",
+      "tinta": "#E2EAE3",
+      "tinta-gris": "#A9B8AD",
+      "vino-tapa": "#7A2236",
+      "vino-hondo": "#5C1726",
+      "sello-violeta": "#A794E8",
+      "tinta-roja": "#FFB4A8",
+      "tinta-verde": "#8FD3A6",
+      "serie-1": "#3987E5",
+      "serie-2": "#D95926",
+      "serie-3": "#199E70",
+      "serie-4": "#C98500",
+      "serie-5": "#D55181",
+      "serie-6": "#008300",
+      "serie-7": "#9085E9",
+      "serie-8": "#E66767"
+    }
+  },
+  "components": [
+    {
+      "name": "Botón primario",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Píldora vino; una acción principal por vista.",
+      "html": "<button class=\"ds-btn-primary\">Apartar $1,47 <span>Bs 733,14</span></button>",
+      "css": ".ds-btn-primary{font-family:Archivo,Roboto,sans-serif;height:52px;padding:0 24px;border:none;border-radius:999px;background:#5C1726;color:#F7ECEE;font-weight:700;font-size:15px;display:inline-flex;align-items:center;gap:10px;cursor:pointer;transition:background .15s}.ds-btn-primary span{font-variant-numeric:tabular-nums;font-size:13px;opacity:.8}.ds-btn-primary:hover{background:#4E1321}.ds-btn-primary:active{background:#43101C}.ds-btn-primary:focus-visible{outline:2px solid #1B1F1C;outline-offset:2px}"
+    },
+    {
+      "name": "Botón secundario",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Píldora clara con borde suave.",
+      "html": "<button class=\"ds-btn-sec\">Vincular bancos</button>",
+      "css": ".ds-btn-sec{font-family:Archivo,Roboto,sans-serif;height:48px;padding:0 20px;border:1.5px solid #DCE4DD;border-radius:999px;background:#FBFCFA;color:#1B1F1C;font-weight:700;font-size:14px;cursor:pointer}.ds-btn-sec:hover{background:#EEF2EE}.ds-btn-sec:focus-visible{outline:2px solid #5C1726;outline-offset:2px}"
+    },
+    {
+      "name": "Tapa con píldora BCV",
+      "kind": "card",
+      "refersTo": "tapa-card",
+      "description": "Posición global en USD y Bs con la tasa del día.",
+      "html": "<div class=\"ds-tapa\"><small>Posición global</small><b>$432,92</b><span>Bs 215.911,28</span><em>1 US$ = <strong>Bs 498,73</strong> · Tasa BCV 07 nov</em></div>",
+      "css": ".ds-tapa{font-family:Archivo,Roboto,sans-serif;background:#5C1726;color:#F7ECEE;border-radius:28px;padding:18px 20px;width:300px;display:flex;flex-direction:column;gap:4px}.ds-tapa small{color:#DDBBC3;font-weight:600;font-size:14px}.ds-tapa b{font-family:'Archivo Condensed',Archivo,sans-serif;font-size:52px;line-height:1;font-variant-numeric:tabular-nums;}.ds-tapa span{color:#DDBBC3;font-variant-numeric:tabular-nums;font-weight:600}.ds-tapa em{font-style:normal;margin-top:12px;background:rgba(255,255,255,.12);border-radius:40px;padding:8px 14px;font-size:12.5px;color:#DDBBC3}.ds-tapa em strong{color:#F7ECEE}"
+    },
+    {
+      "name": "Lámina",
+      "kind": "card",
+      "refersTo": "lamina",
+      "description": "Bloque claro de 24px sobre el fondo liso.",
+      "html": "<div class=\"ds-lam\"><b>¿Dónde está tu dinero?</b><p>Toca una porción para ver de qué cuenta se trata.</p></div>",
+      "css": ".ds-lam{font-family:Archivo,Roboto,sans-serif;background:#FBFCFA;border-radius:24px;padding:18px;width:300px;color:#1B1F1C}.ds-lam b{font-size:17px}.ds-lam p{margin:4px 0 0;font-size:12px;color:#47524A}"
+    },
+    {
+      "name": "Marcas de racha",
+      "kind": "custom",
+      "refersTo": "day-mark",
+      "description": "Aporte lleno en vino; día colchón punteado.",
+      "html": "<div class=\"ds-days\"><span>22</span><span>23</span><span class=\"c\">24</span><span>25</span></div>",
+      "css": ".ds-days{display:flex;gap:6px}.ds-days span{font-family:Archivo,Roboto,sans-serif;width:36px;height:28px;display:grid;place-items:center;background:#5C1726;color:#F7ECEE;border-radius:9px;font-variant-numeric:tabular-nums;font-size:10.5px;font-weight:700}.ds-days span.c{background:transparent;color:#1B1F1C;border:1.4px dashed #1B1F1C}"
+    },
+    {
+      "name": "Campo de entrada",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Relleno claro con esquinas de 16px.",
+      "html": "<label class=\"ds-field\"><span>Cédula</span><input value=\"12345678\"></label>",
+      "css": ".ds-field{font-family:Archivo,Roboto,sans-serif;display:flex;flex-direction:column;gap:4px;width:240px}.ds-field span{font-size:12px;font-weight:600;color:#47524A}.ds-field input{height:52px;border:1px solid #DCE4DD;border-radius:16px;background:#FBFCFA;padding:0 18px;font-size:16px;color:#1B1F1C}.ds-field input:focus{outline:none;border:2px solid #5C1726}"
+    },
+    {
+      "name": "Barra de navegación",
+      "kind": "nav",
+      "refersTo": "nav-bar",
+      "description": "Material 3 con indicador píldora rosa vino.",
+      "html": "<nav class=\"ds-nav\"><a class=\"on\"><i></i>Inicio</a><a><i></i>Cofre</a><a><i></i>Pagar</a><a><i></i>Puntos</a><a><i></i>Más</a></nav>",
+      "css": ".ds-nav{font-family:Archivo,Roboto,sans-serif;display:flex;justify-content:space-around;width:360px;height:72px;align-items:center;background:#FBFCFA;box-shadow:0 -2px 16px rgba(0,0,0,.08)}.ds-nav a{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#47524A;cursor:pointer}.ds-nav a i{width:64px;height:32px;border-radius:16px;display:block}.ds-nav a i::after{content:'';display:block;width:18px;height:18px;margin:7px auto;border:2px solid currentColor;border-radius:5px}.ds-nav a.on{color:#1B1F1C;font-weight:700}.ds-nav a.on i{background:#EBD3D8}"
+    }
+  ],
+  "narrative": {
+    "northStar": "La Libreta Viva",
+    "overview": "Ahorra+ sigue siendo la libreta de ahorros que todo venezolano reconoce: una tapa vino tinto y hojas claras donde el dinero se lee de un vistazo, en Bs y USD a tasa BCV. En esta versión la libreta se vuelve una app táctil y cálida. El fondo es liso, sin tramas ni rayas. El contenido vive en láminas claras con esquinas de 24px. Los botones son píldoras. Las cifras son grandes, con números tabulares y sin aire de terminal. El color con voz propia aparece donde ayuda a entender: el vino en la tapa y en la acción principal, el violeta del Sello de compromiso, y una paleta categórica viva solo en los gráficos.\n\nSe rechaza explícitamente la estética cripto o de casino (neón, brillos, celebraciones estridentes), la fintech gringa genérica (verde dinero, degradados de saldo en la pantalla principal) y lo infantil (ilustraciones, mascotas, confeti). El único degradado permitido es el de la tarjeta de crédito dibujada, porque representa un objeto físico.",
+    "keyCharacteristics": [
+      "La tapa vino (tarjeta de 28px) lleva la posición global en USD, su equivalente en Bs y la tasa BCV en una píldora.",
+      "Fondo verde pálido liso con láminas claras de 24px encima. Sin guilloché, sin reglas verticales.",
+      "Botones píldora de 52dp; campos rellenos con esquinas de 16px; teclado de PIN en círculos.",
+      "Todo monto en Bs y USD, con la tasa BCV y su fecha a la vista.",
+      "La distribución del dinero se ve en una dona interactiva por cuenta."
+    ],
+    "rules": [
+      {
+        "name": "The Un Sello Rule",
+        "body": "Cada vista lleva como máximo una insignia de Sello de compromiso.",
+        "section": "colors"
+      },
+      {
+        "name": "The Dos Monedas Rule",
+        "body": "Ningún monto aparece solo: Bs y USD van juntos, con la tasa BCV y su fecha alcanzables en la misma vista.",
+        "section": "colors"
+      },
+      {
+        "name": "The Fondo Liso Rule",
+        "body": "El fondo no lleva tramas, rayas ni patrones. La textura viene de las láminas y del color, no del papel.",
+        "section": "colors"
+      }
+    ],
+    "dos": [
+      "Do muestra cada monto en Bs y USD, con la tasa BCV y su fecha en la misma vista.",
+      "Do pon el contenido en láminas de 24px sobre el fondo liso.",
+      "Do usa la paleta categórica solo en gráficos, en orden fijo, con leyenda-lista visible.",
+      "Do pinta los días colchón como días cubiertos (contorno punteado), nunca como error.",
+      "Do mantén \"Simulación informativa, no asesoría.\" bajo el Espejo de Impacto y el asistente de IA.",
+      "Do muestra solo los últimos 4 dígitos de cualquier tarjeta o cuenta."
+    ],
+    "donts": [
+      "Don't vuelvas a poner tramas, guilloché o rayas en el fondo.",
+      "Don't uses neón, brillos ni celebraciones estridentes: Ahorra+ no es cripto ni casino.",
+      "Don't uses verde dinero ni degradados de saldo en la pantalla principal.",
+      "Don't uses ilustraciones, mascotas ni confeti.",
+      "Don't muestres montos antes del PIN salvo con saldo rápido activo en el equipo de confianza.",
+      "Don't pintes un día sin aporte ni un sello roto en Tinta Roja: romper un sello cuesta el multiplicador, nunca dinero."
+    ]
+  }
+}

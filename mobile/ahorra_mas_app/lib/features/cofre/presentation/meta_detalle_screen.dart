@@ -8,6 +8,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/util/fechas.dart';
 import '../../../core/widgets/comunes.dart';
 import '../../../core/widgets/dinero_widgets.dart';
+import '../../../core/widgets/libreta.dart';
 import '../../../core/widgets/step_up.dart';
 import '../../consolidacion/domain/consolidacion_models.dart';
 import '../../consolidacion/presentation/consolidacion_providers.dart';
@@ -179,7 +180,9 @@ class _MetaDetalleScreenState extends ConsumerState<MetaDetalleScreen> {
             ),
         ],
       ),
-      body: RefreshIndicator(
+      body: FondoHoja(
+        child: RefreshIndicator(
+        color: AhorraColores.of(context).tinta,
         onRefresh: () async => _refrescar(),
         child: VistaAsync<Meta>(
           valor: meta,
@@ -245,6 +248,7 @@ class _MetaDetalleScreenState extends ConsumerState<MetaDetalleScreen> {
           ),
         ),
       ),
+      ),
     );
   }
 }
@@ -256,50 +260,38 @@ class _Encabezado extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colores = AhorraColores.of(context);
+    final c = AhorraColores.of(context);
     final t = Theme.of(context).textTheme;
     final tasa = meta.cuotaHoy?.tasaValorBsX10000;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 86,
-              height: 86,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  CircularProgressIndicator(
-                    value: Dinero.fraccionPb(meta.progresoPb),
-                    strokeWidth: 9,
-                    color: colores.cofre,
-                    backgroundColor: colores.cofreContenedor,
+    return Padding(
+      padding: const EdgeInsets.only(top: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(Dinero.usd(meta.acumuladoUsdCts), style: t.displaySmall),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Text(
+                    'de ${Dinero.usd(meta.montoObjetivoUsdCts)} · ${Dinero.porcentajePb(meta.progresoPb)}',
+                    style: AppTheme.cifra(tamano: 13, color: c.tintaGris),
                   ),
-                  Center(
-                    child: Icon(iconoCategoria(meta.categoria), size: 32, color: colores.cofre),
-                  ),
-                ],
+                ),
               ),
-            ),
-            const SizedBox(width: 18),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(Dinero.usd(meta.acumuladoUsdCts),
-                      style: t.headlineSmall?.copyWith(fontWeight: FontWeight.w800)),
-                  Text('de ${Dinero.usd(meta.montoObjetivoUsdCts)} · ${Dinero.porcentajePb(meta.progresoPb)}'),
-                  if (tasa != null)
-                    Text('≈ ${Dinero.bs(Dinero.usdABs(meta.acumuladoUsdCts, tasa))} a tasa BCV',
-                        style: t.bodySmall),
-                  const SizedBox(height: 6),
-                  Text('Meta: ${Fechas.larga(meta.fechaObjetivo)}', style: t.bodySmall),
-                ],
-              ),
-            ),
-          ],
-        ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          TiraProgreso(fraccion: Dinero.fraccionPb(meta.progresoPb)),
+          const SizedBox(height: 8),
+          if (tasa != null)
+            Text('≈ ${Dinero.bs(Dinero.usdABs(meta.acumuladoUsdCts, tasa))} a tasa BCV ${Dinero.tasa(tasa)}',
+                style: t.bodySmall?.copyWith(color: c.tintaGris)),
+          Text('Meta: ${Fechas.larga(meta.fechaObjetivo)}', style: t.bodySmall?.copyWith(color: c.tintaGris)),
+        ],
       ),
     );
   }
@@ -345,58 +337,85 @@ class _SeccionSello extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colores = AhorraColores.of(context);
+    final c = AhorraColores.of(context);
+    final t = Theme.of(context).textTheme;
     final s = meta.selloActivo;
     final roto = meta.sello?.estatus == 'roto';
     if (s != null) {
-      return Card(
-        color: colores.cofreContenedor,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.lock, color: colores.alCofre),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      '${Dinero.usd(s.montoSelladoUsdCts)} sellados hasta ${Fechas.media(s.fechaLiberacion)}',
-                      style: TextStyle(color: colores.alCofre, fontWeight: FontWeight.w700),
-                    ),
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Filete(),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${Dinero.usd(s.montoSelladoUsdCts)} sellados hasta ${Fechas.media(s.fechaLiberacion)}',
+                        style: t.titleSmall,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Compromiso suave: el dinero sigue en tu banco. Mantener el sello protege tu multiplicador.',
+                        style: t.bodySmall?.copyWith(color: c.tintaGris),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Compromiso suave: el dinero sigue en tu banco. Mantener el sello protege tu multiplicador.',
-                style: TextStyle(color: colores.alCofre),
-              ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton.icon(
-                  onPressed: alRomper,
-                  style: TextButton.styleFrom(foregroundColor: colores.peligro),
-                  icon: const Icon(Icons.lock_open),
-                  label: const Text('Romper sello'),
                 ),
+                const SizedBox(width: 12),
+                SelloRectangular(
+                  titulo: 'Sellado',
+                  detalle: '${Dinero.usd(s.montoSelladoUsdCts)} · ${Fechas.libreta(s.fechaLiberacion)}',
+                ),
+              ],
+            ),
+          ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: alRomper,
+              icon: const Icon(Icons.lock_open),
+              label: const Text('Romper sello'),
+            ),
+          ),
+          const Filete(),
+        ],
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Filete(),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(roto ? 'Tu sello anterior se rompió' : 'Sella una parte hasta tu meta', style: t.titleSmall),
+                    const SizedBox(height: 2),
+                    Text('Si lo rompes antes, pierdes el multiplicador, nunca tu dinero.',
+                        style: t.bodySmall?.copyWith(color: c.tintaGris)),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              OutlinedButton(
+                onPressed: meta.acumuladoUsdCts > 0 ? alSellar : null,
+                child: const Text('Sellar'),
               ),
             ],
           ),
         ),
-      );
-    }
-    return Card(
-      child: ListTile(
-        leading: Icon(Icons.lock_outline, color: colores.cofre),
-        title: Text(roto ? 'Tu sello anterior se rompió' : 'Sella una parte hasta tu meta'),
-        subtitle: const Text('Si lo rompes antes, pierdes el multiplicador, nunca tu dinero.'),
-        trailing: FilledButton.tonal(
-          onPressed: meta.acumuladoUsdCts > 0 ? alSellar : null,
-          child: const Text('Sellar'),
-        ),
-      ),
+        const Filete(),
+      ],
     );
   }
 }

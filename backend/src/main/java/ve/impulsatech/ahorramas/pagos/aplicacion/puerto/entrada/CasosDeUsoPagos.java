@@ -37,7 +37,7 @@ public final class CasosDeUsoPagos {
     }
 
     public record VistaTarjeta(long idTarjeta, long idInstitucion, String banco, String ultimos4, String alias, String titularConfirmado,
-                               boolean esPropia, EstadoCuentaVista estadoCuenta) {
+                               boolean esPropia, EstadoCuentaVista estadoCuenta, String marca) {
     }
 
     public record BeneficiarioConfirmable(String titular, String ultimos4) {

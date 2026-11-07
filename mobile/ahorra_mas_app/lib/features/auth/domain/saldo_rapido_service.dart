@@ -63,6 +63,7 @@ class SaldoRapidoService {
           'totalBsCts': s.totalBsCts,
           'totalUsdCts': s.totalUsdCts,
           'actualizadoEn': s.actualizadoEn?.toIso8601String(),
+          'bancos': [for (final b in s.bancos) b.aJson()],
         }),
       );
       return ConsultaSaldoRapido(saldo: s, desdeCache: false);
@@ -85,6 +86,9 @@ class SaldoRapidoService {
       totalBsCts: (j['totalBsCts'] as num).toInt(),
       totalUsdCts: (j['totalUsdCts'] as num).toInt(),
       actualizadoEn: j['actualizadoEn'] == null ? null : DateTime.tryParse(j['actualizadoEn'] as String),
+      bancos: [
+        for (final b in (j['bancos'] as List?) ?? const []) SaldoBanco.desdeJson((b as Map).cast<String, dynamic>()),
+      ],
     );
   }
 }

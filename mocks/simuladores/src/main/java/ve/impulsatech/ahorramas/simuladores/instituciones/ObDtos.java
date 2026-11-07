@@ -22,7 +22,7 @@ public final class ObDtos {
     }
 
     /** Nunca PAN: solo alias opaco + últimos 4. */
-    public record Tarjeta(String refTarjeta, String ultimos4, String titular, EstadoCuenta estadoCuenta) {
+    public record Tarjeta(String refTarjeta, String ultimos4, String titular, EstadoCuenta estadoCuenta, String marca) {
     }
 
     /** Respuesta OAuth (snake_case por ser estándar OAuth2). */

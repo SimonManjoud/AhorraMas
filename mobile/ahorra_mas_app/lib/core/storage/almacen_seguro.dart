@@ -53,4 +53,7 @@ class ClavesAlmacen {
   static const tokenSaldo = 'saldoRapido.token';
   static const tokenSaldoExpira = 'saldoRapido.expira';
   static const saldoInstantanea = 'saldoRapido.instantanea';
+
+  /// Nombre y bancos del último usuario que ingresó en este equipo (sin montos).
+  static const recuerdoEquipo = 'login.recuerdoEquipo';
 }

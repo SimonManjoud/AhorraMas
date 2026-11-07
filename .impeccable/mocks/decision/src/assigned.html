@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<title>Libreta de ahorro</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=JetBrains+Mono:wght@400;500;700&display=block" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
+<style>
+:root{
+  --cover:#5C1726; --cover-deep:#43101C; --on-cover:#F7ECEE; --on-cover2:#DDBBC3;
+  --page:#E4ECE5; --page-2:#D6E1D8; --rule:#9DB0A2; --rule-soft:#BFCEC2;
+  --ink:#1B1F1C; --ink2:#47524A; --stamp:#5A3E9E;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#CFCFCB;display:flex;gap:40px;padding:36px 40px 28px;width:840px;font-family:"Archivo",sans-serif;color:var(--ink)}
+.col{display:flex;flex-direction:column;align-items:center;gap:12px}
+.cap{font:600 13px/1 "Archivo";font-stretch:80%;letter-spacing:.06em;text-transform:uppercase;color:#3b3b39}
+.phone{width:360px;height:760px;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:var(--page);box-shadow:0 18px 40px -14px rgba(0,0,0,.4)}
+.ms{font-family:"Material Symbols Outlined";font-size:22px;line-height:1;font-weight:400;font-style:normal}
+.mono{font-family:"JetBrains Mono",monospace;font-variant-numeric:tabular-nums}
+.narrow{font-stretch:72%;text-transform:uppercase;letter-spacing:.09em;font-weight:600}
+.status{height:28px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;font:600 12px "Archivo";color:var(--on-cover);background:var(--cover)}
+.status .ic{display:flex;gap:4px}.status .ms{font-size:15px}
+.cover{background:var(--cover);color:var(--on-cover);padding:10px 20px 26px;position:relative;
+  background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 3px)}
+.toprow{display:flex;justify-content:space-between;align-items:center}
+.word{font-weight:800;font-size:21px;font-stretch:78%;letter-spacing:-.01em}
+.who{font-size:12px;color:var(--on-cover2)}
+.total{font-weight:700;font-stretch:74%;font-size:60px;letter-spacing:-.02em;line-height:1;margin-top:22px;font-variant-numeric:tabular-nums}
+.sub{font-size:14px;color:var(--on-cover2);margin-top:8px}
+.sub b{color:var(--on-cover);font-weight:600}
+.page{flex:1;position:relative;padding:18px 16px 0;
+  background-color:var(--page);
+  background-image:
+    repeating-radial-gradient(circle at 115% -10%,transparent 0 7px,rgba(150,178,157,.22) 7px 8px),
+    repeating-radial-gradient(circle at -20% 120%,transparent 0 9px,rgba(150,178,157,.16) 9px 10px);}
+table{width:100%;border-collapse:collapse}
+th{font:600 10.5px "Archivo";font-stretch:72%;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);text-align:right;padding:0 8px 6px;border-bottom:1px solid var(--ink)}
+th:first-child,td:first-child{text-align:left;padding-left:0}
+td{padding:8px 8px;border-bottom:1px solid var(--rule-soft);font-size:12.5px;text-align:right;vertical-align:top}
+td+td,th+th{border-left:1px solid var(--rule-soft)}
+td:last-child,th:last-child{padding-right:0}
+.acc{font-weight:600;font-size:13.5px}
+.acc small{display:block;font:500 10.5px "Archivo";font-stretch:75%;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);margin-top:2px}
+tr.tot td{border-top:3px double var(--ink);border-bottom:none;font-weight:700;padding-top:9px}
+.stamp{position:absolute;right:18px;bottom:6px;width:112px;height:112px;border-radius:50%;border:3px solid var(--stamp);color:var(--stamp);
+  transform:rotate(-13deg);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;filter:url(#ink);opacity:.92;background:rgba(228,236,229,.35)}
+.stamp::before{content:"";position:absolute;inset:6px;border-radius:50%;border:1px solid var(--stamp)}
+.stamp .a{font:700 10px "Archivo";font-stretch:70%;letter-spacing:.16em}
+.stamp .b{font:700 17px "JetBrains Mono";margin:3px 0 2px;letter-spacing:-.02em}
+.stamp .c{font:600 9.5px "JetBrains Mono";letter-spacing:.06em}
+.route{margin-top:16px;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:12px 0}
+.route .line{display:flex;align-items:baseline;gap:8px;font-size:13px}
+.route .line .d{color:var(--ink2);font-size:11.5px}
+.route .lead{flex:1;border-bottom:1.5px dotted var(--ink2);transform:translateY(-3px)}
+.route .amt{font-weight:700;font-size:15px}
+.btn{margin-top:11px;height:48px;border-radius:6px;background:var(--cover);color:var(--on-cover);display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:15px}
+.btn .mono{font-size:13px;opacity:.8;font-weight:500}
+.note{display:flex;gap:6px;align-items:flex-start;font-size:11.5px;line-height:1.35;color:var(--ink2);margin-top:14px;max-width:190px}
+.note .ms{font-size:16px}
+.nav{height:76px;background:var(--page-2);border-top:1px solid var(--rule-soft);display:flex;justify-content:space-around;align-items:center;padding-bottom:6px}
+.nav div{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11.5px;font-weight:600;color:var(--ink2);width:62px}
+.nav .pill{width:56px;height:30px;border-radius:15px;display:grid;place-items:center}
+.nav .on{color:var(--ink)} .nav .on .pill{background:var(--cover);color:var(--on-cover)}
+/* Cofre */
+.cover.slim{padding:10px 20px 18px}
+.ttl{font-weight:800;font-stretch:76%;font-size:30px;letter-spacing:-.01em;margin-top:14px}
+.meta-h{display:flex;justify-content:space-between;align-items:center;height:52px}
+.meta-h h3{font-size:17px;font-weight:700}
+.meta-h .mono{font-size:11.5px;color:var(--ink2)}
+.cells{display:grid;grid-template-columns:repeat(30,1fr);border:1px solid var(--ink);height:14px;margin-top:8px}
+.cells i{border-right:1px solid var(--rule-soft)}.cells i:last-child{border:none}
+.cells i.f{background:var(--ink);border-right-color:var(--page)}
+.cells i.h{background:linear-gradient(90deg,var(--ink) 24%,transparent 24%)}
+.prog{display:flex;justify-content:space-between;font-size:11.5px;margin-top:5px;color:var(--ink2)}
+.prog b{color:var(--ink)}
+.hoy{margin-top:14px;border-top:3px double var(--ink);border-bottom:1px solid var(--ink);padding:12px 0 12px}
+.hoy .big{font-variant-numeric:tabular-nums;font-weight:700;font-stretch:76%;font-size:31px;letter-spacing:-.01em;line-height:1.05}
+.hoy .small{font-size:11.5px;color:var(--ink2);margin-top:5px}
+.sec{display:flex;justify-content:space-between;align-items:baseline;margin-top:14px;font-size:11px}
+.sec .narrow{font-size:11px;color:var(--ink)}
+.sec .mono{font-size:11px;color:var(--ink2)}
+.days{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;margin-top:7px}
+.days span{height:24px;border:1px solid var(--ink);display:grid;place-items:center;font:600 10px "JetBrains Mono";background:var(--ink);color:var(--page)}
+.days span.c{background:transparent;color:var(--ink);border-style:dashed}
+.mirror{margin-top:14px;border-top:1px solid var(--ink);padding-top:10px}
+.mirror p{font-size:14px;line-height:1.35}
+.mirror p b{font-family:"JetBrains Mono";font-size:13.5px}
+.mirror .disc{font-size:10.5px;color:var(--ink2);margin-top:5px;font-style:italic}
+.seal{position:absolute;right:16px;top:14px;border:3px solid var(--stamp);color:var(--stamp);padding:5px 9px 4px;transform:rotate(-7deg);filter:url(#ink);text-align:center;opacity:.92;background:rgba(228,236,229,.4)}
+.seal .a{font:800 13px "Archivo";font-stretch:68%;letter-spacing:.2em}
+.seal .b{font:700 11px "JetBrains Mono";border-top:1px solid var(--stamp);margin-top:3px;padding-top:2px}
+</style></head>
+<body>
+<svg width="0" height="0" style="position:absolute"><filter id="ink"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4"/><feDisplacementMap in="SourceGraphic" scale="2.2"/></filter></svg>
+
+<div class="col">
+<div class="phone">
+  <div class="status"><span>9:41</span><span class="ic"><span class="ms">signal_cellular_alt</span><span class="ms">wifi</span><span class="ms">battery_full</span></span></div>
+  <div class="cover">
+    <div class="toprow"><span class="word">Ahorra+</span><span class="who">Libreta de María Pérez &nbsp;<span class="ms" style="font-size:20px;vertical-align:-5px">notifications</span></span></div>
+    <div class="total">$447,84</div>
+    <div class="sub"><b>Bs 223.352,20</b> &nbsp;·&nbsp; 4 cuentas en 3 instituciones</div>
+  </div>
+  <div class="page">
+    <div class="stamp"><span class="a">TASA BCV</span><span class="b">498,7321</span><span class="c">07·NOV·2026</span></div>
+    <table>
+      <tr><th>Cuenta</th><th>Bs</th><th>USD</th></tr>
+      <tr><td class="acc">Banco Orinoco<small>Corriente Bs ·4417</small></td><td class="mono">48.210,55</td><td class="mono">96,67</td></tr>
+      <tr><td class="acc">Banco Ávila<small>Ahorro Bs ·0932</small></td><td class="mono">12.904,10</td><td class="mono">25,87</td></tr>
+      <tr><td class="acc">Banco Ávila<small>Divisas USD ·5120</small></td><td class="mono">119.695,70</td><td class="mono">240,00</td></tr>
+      <tr><td class="acc">CriptoAndes<small>USDT · solo lectura</small></td><td class="mono">42.541,85</td><td class="mono">85,30</td></tr>
+      <tr class="tot"><td>Total</td><td class="mono">223.352,20</td><td class="mono">447,84</td></tr>
+    </table>
+    <div class="route">
+      <div class="line"><span class="mono d">07 NOV</span><span>Viaje en marzo, hoy toca</span><span class="lead"></span><span class="mono amt">$1,47</span></div>
+      <div class="btn">Apartar $1,47 <span class="mono">Bs 733,13</span></div>
+    </div>
+    <div class="note"><span class="ms">lock</span>Nunca vemos tus claves. Sincronizado hace 7 min.</div>
+  </div>
+  <div class="nav">
+    <div class="on"><span class="pill"><span class="ms">home</span></span>Inicio</div>
+    <div><span class="pill"><span class="ms">savings</span></span>Cofre</div>
+    <div><span class="pill"><span class="ms">credit_card</span></span>Pagar</div>
+    <div><span class="pill"><span class="ms">stars</span></span>Puntos</div>
+    <div><span class="pill"><span class="ms">menu</span></span>Más</div>
+  </div>
+</div>
+<span class="cap">Inicio</span></div>
+
+<div class="col">
+<div class="phone">
+  <div class="status"><span>9:41</span><span class="ic"><span class="ms">signal_cellular_alt</span><span class="ms">wifi</span><span class="ms">battery_full</span></span></div>
+  <div class="cover slim">
+    <div class="toprow"><span class="word">Ahorra+</span><span class="who">$196,40 en 2 metas</span></div>
+    <div class="ttl">Cofre Protector</div>
+  </div>
+  <div class="page">
+    <div class="seal"><div class="a">SELLADO</div><div class="b">$50,00 · 15 MAR</div></div>
+    <div class="meta-h"><h3>Viaje en marzo</h3></div>
+    <div class="cells">
+      <i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="h"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+    </div>
+    <div class="prog"><span><b class="mono">$112,40</b> de <span class="mono">$300,00</span></span><span class="mono">15 MAR 2027</span></div>
+    <div class="hoy">
+      <div class="big">Hoy toca apartar $1,47</div>
+      <div class="small">Bs 733,13 a tasa BCV 498,7321 · faltan 128 días</div>
+      <div class="btn">Apartar ahora</div>
+    </div>
+    <div class="sec"><span class="narrow">Racha · 16 días</span><span class="mono">1,25x · 1 colchón libre</span></div>
+    <div class="days">
+      <span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span class="c">27</span><span>28</span><span>29</span>
+      <span>30</span><span>31</span><span>01</span><span class="c">02</span><span>03</span><span>04</span><span>05</span><span>06</span>
+    </div>
+    <div class="mirror">
+      <div class="sec" style="margin-top:0"><span class="narrow">Espejo de Impacto · noviembre</span></div>
+      <p style="margin-top:6px;max-width:300px">Tu cofre de <b>$196,40</b> te protegió de perder <b>Bs 5.289,30</b> este mes.</p>
+      <div class="disc">Simulación informativa, no asesoría.</div>
+    </div>
+  </div>
+  <div class="nav">
+    <div><span class="pill"><span class="ms">home</span></span>Inicio</div>
+    <div class="on"><span class="pill"><span class="ms">savings</span></span>Cofre</div>
+    <div><span class="pill"><span class="ms">credit_card</span></span>Pagar</div>
+    <div><span class="pill"><span class="ms">stars</span></span>Puntos</div>
+    <div><span class="pill"><span class="ms">menu</span></span>Más</div>
+  </div>
+</div>
+<span class="cap">Cofre Protector</span></div>
+</body></html>

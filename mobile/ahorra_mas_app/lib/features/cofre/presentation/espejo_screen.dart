@@ -5,8 +5,10 @@ import '../../../core/money/dinero.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/util/fechas.dart';
 import '../../../core/widgets/comunes.dart';
+import '../../../core/widgets/libreta.dart';
 import '../domain/cofre_models.dart';
 import 'cofre_providers.dart';
+import 'widgets/cofre_widgets.dart';
 
 /// Espejo de Impacto: cuánto poder de compra salvó el cofre en divisas frente a la devaluación.
 /// Solo lee del ledger y de la tasa BCV; es una simulación informativa, no asesoría.
@@ -43,10 +45,12 @@ class _EspejoScreenState extends ConsumerState<EspejoScreen> {
     final espejo = ref.watch(espejoProvider(clave));
     return Scaffold(
       appBar: AppBar(title: const Text('Espejo de Impacto')),
-      body: RefreshIndicator(
+      body: FondoHoja(
+        child: RefreshIndicator(
+        color: AhorraColores.of(context).tinta,
         onRefresh: () async => ref.invalidate(espejoProvider(clave)),
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
           children: [
             Row(
               children: [
@@ -73,6 +77,7 @@ class _EspejoScreenState extends ConsumerState<EspejoScreen> {
           ],
         ),
       ),
+      ),
     );
   }
 }
@@ -85,114 +90,43 @@ class _Contenido extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
-    final cs = Theme.of(context).colorScheme;
-    final colores = AhorraColores.of(context);
+    final c = AhorraColores.of(context);
     final e = espejo;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Container(
-          padding: const EdgeInsets.all(22),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            gradient: LinearGradient(
-              colors: [cs.primary, Color.lerp(cs.primary, colores.cofre, 0.35)!],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.shield, color: cs.onPrimary),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text('Tu cofre te protegió',
-                        overflow: TextOverflow.ellipsis, style: t.labelLarge?.copyWith(color: cs.onPrimary)),
-                  ),
-                  if (e.provisional)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: cs.onPrimary.withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text('Provisional', style: t.labelSmall?.copyWith(color: cs.onPrimary)),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(e.frase,
-                  key: const ValueKey('espejo-frase'),
-                  style: t.headlineSmall?.copyWith(color: cs.onPrimary, fontWeight: FontWeight.w700)),
-            ],
-          ),
-        ),
+        if (e.provisional) ...[
+          Align(alignment: Alignment.centerRight, child: EtiquetaLibro('Provisional', color: c.tintaGris)),
+          const SizedBox(height: 8),
+        ],
+        Text(e.frase, key: const ValueKey('espejo-frase'), style: t.headlineMedium),
         const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _Cifra(
-                titulo: 'Pérdida evitada en Bs',
-                valor: Dinero.bs(e.perdidaEvitadaBsCts),
-                color: colores.exito,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _Cifra(
-                titulo: 'Equivale en USD',
-                valor: Dinero.usd(e.perdidaEvitadaUsdCts),
-                color: colores.exito,
-              ),
-            ),
-          ],
+        const Filete(doble: true),
+        _Fila('Pérdida evitada en Bs', Dinero.bs(e.perdidaEvitadaBsCts), destacado: true),
+        _Fila('Equivale en USD', Dinero.usd(e.perdidaEvitadaUsdCts), destacado: true),
+        _Fila('Saldo de tus cofres', Dinero.usd(e.saldoCofresUsdCts)),
+        _Fila('Devaluación del Bs en el mes', '▼ ${Dinero.porcentajePb(e.devaluacionPb)}'),
+        const SizedBox(height: 22),
+        const Rubrica('Tasa oficial BCV'),
+        const SizedBox(height: 6),
+        const Filete(),
+        if (e.tasaInicio != null)
+          _Fila('Inicio (${Fechas.libretaAnio(e.tasaInicio!.fecha)})', Dinero.tasa(e.tasaInicio!.valorBsX10000)),
+        if (e.tasaFin != null)
+          _Fila('Cierre (${Fechas.libretaAnio(e.tasaFin!.fecha)})', Dinero.tasa(e.tasaFin!.valorBsX10000)),
+        _Fila(
+          'Inflación mensual',
+          e.inflacionMensualPb == null ? 'Aún no publicada' : Dinero.porcentajePb(e.inflacionMensualPb!),
         ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(child: _Cifra(titulo: 'Saldo de tus cofres', valor: Dinero.usd(e.saldoCofresUsdCts))),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _Cifra(
-                titulo: 'Devaluación del Bs en el mes',
-                valor: Dinero.porcentajePb(e.devaluacionPb),
-                color: colores.peligro,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Tasa oficial BCV', style: t.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
-                const SizedBox(height: 8),
-                if (e.tasaInicio != null)
-                  _Fila('Inicio (${Fechas.corta(e.tasaInicio!.fecha)})', Dinero.tasa(e.tasaInicio!.valorBsX10000)),
-                if (e.tasaFin != null)
-                  _Fila('Cierre (${Fechas.corta(e.tasaFin!.fecha)})', Dinero.tasa(e.tasaFin!.valorBsX10000)),
-                _Fila(
-                  'Inflación mensual',
-                  e.inflacionMensualPb == null ? 'Aún no publicada' : Dinero.porcentajePb(e.inflacionMensualPb!),
-                ),
-                const Divider(height: 24),
-                _Fila('Tu dinero total en Bs', Dinero.bs(e.totalBsCts)),
-                _Fila('Tu dinero total en USD', Dinero.usd(e.totalUsdCts)),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 2),
+        const Filete(doble: true),
+        _Fila('Tu dinero total en Bs', Dinero.bs(e.totalBsCts)),
+        _Fila('Tu dinero total en USD', Dinero.usd(e.totalUsdCts)),
+        const SizedBox(height: 14),
         Text(
           'Calculado con cada aporte vivo de tu cofre: dólares × (tasa de cierre − tasa del día del '
           'aporte o del 1.º del mes).',
-          style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+          style: t.bodySmall?.copyWith(color: c.tintaGris),
         ),
         const SizedBox(height: 12),
         AvisoSimulacion(texto: e.disclaimer),
@@ -201,51 +135,38 @@ class _Contenido extends StatelessWidget {
   }
 }
 
-class _Cifra extends StatelessWidget {
-  const _Cifra({required this.titulo, required this.valor, this.color});
-
-  final String titulo;
-  final String valor;
-  final Color? color;
-
-  @override
-  Widget build(BuildContext context) {
-    final t = Theme.of(context).textTheme;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(titulo, style: t.bodySmall),
-            const SizedBox(height: 4),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(valor, style: t.titleLarge?.copyWith(fontWeight: FontWeight.w800, color: color)),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
+/// Fila del libro: concepto a la izquierda, cifra tabular a la derecha.
 class _Fila extends StatelessWidget {
-  const _Fila(this.etiqueta, this.valor);
+  const _Fila(this.etiqueta, this.valor, {this.destacado = false});
 
   final String etiqueta;
   final String valor;
+  final bool destacado;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Row(
-        children: [
-          Expanded(child: Text(etiqueta)),
-          Flexible(child: Text(valor, textAlign: TextAlign.end, style: const TextStyle(fontWeight: FontWeight.w600))),
-        ],
+    final c = AhorraColores.of(context);
+    return DecoratedBox(
+      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: c.reglaSuave))),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Row(
+          children: [
+            Expanded(child: Text(etiqueta, style: Theme.of(context).textTheme.bodyMedium)),
+            const SizedBox(width: 12),
+            Flexible(
+              child: Text(
+                valor,
+                textAlign: TextAlign.end,
+                style: AppTheme.cifra(
+                  tamano: destacado ? 15 : 13,
+                  peso: destacado ? FontWeight.w700 : FontWeight.w500,
+                  color: c.tinta,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

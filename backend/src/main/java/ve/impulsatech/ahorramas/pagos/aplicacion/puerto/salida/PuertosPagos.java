@@ -135,7 +135,8 @@ public final class PuertosPagos {
                                   long montoTotalCts, String estatus) {
     }
 
-    public record TarjetaExterna(String refTarjeta, String ultimos4, String titular, EstadoCuentaExterno estadoCuenta) {
+    /** {@code marca}: visa|mastercard, o null si el emisor no la informa. */
+    public record TarjetaExterna(String refTarjeta, String ultimos4, String titular, EstadoCuentaExterno estadoCuenta, String marca) {
     }
 
     public record EstadoCuentaExterno(LocalDate fechaCorte, LocalDate fechaLimitePago, long saldoTotalCts, long pagoMinimoCts) {
@@ -143,7 +144,7 @@ public final class PuertosPagos {
 
     public record TarjetaGuardada(long idTarjeta, long idUsuario, long idInstitucion, String refTarjetaEmisor, String ultimos4,
                                   String titularConfirmado, boolean esPropia, String alias, String estatus, Long idEstadoCuenta,
-                                  EstadoCuentaExterno estadoCuenta) {
+                                  EstadoCuentaExterno estadoCuenta, String marca) {
     }
 
     public record Historial(int secuencia, String estadoAnterior, String estadoNuevo, OffsetDateTime fechaHora, String actor,

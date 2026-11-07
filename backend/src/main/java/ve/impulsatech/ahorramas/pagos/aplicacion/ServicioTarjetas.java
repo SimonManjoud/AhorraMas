@@ -69,6 +69,7 @@ class ServicioTarjetas implements GestionarTarjetas {
         EstadoCuentaExterno e = t.estadoCuenta();
         return new VistaTarjeta(t.idTarjeta(), t.idInstitucion(), cuentas.institucion(t.idInstitucion()).nombre(), t.ultimos4(), t.alias(),
                 t.titularConfirmado(), t.esPropia(),
-                e == null ? null : new EstadoCuentaVista(e.fechaCorte(), e.fechaLimitePago(), e.saldoTotalCts(), e.pagoMinimoCts()));
+                e == null ? null : new EstadoCuentaVista(e.fechaCorte(), e.fechaLimitePago(), e.saldoTotalCts(), e.pagoMinimoCts()),
+                t.marca());
     }
 }

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<title>Cinética venezolana</title>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400..900&display=block" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=block" rel="stylesheet">
+<style>
+:root{--ground:#FFFFFF;--ink:#111111;--ink2:#5E5E5E;--line:#E4E4E4;--mag:#E4007C;--cy:#0098DB;--yel:#FFD100}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#CFCFCB;display:flex;gap:40px;padding:36px 40px 28px;width:840px;font-family:"Schibsted Grotesk",sans-serif;color:var(--ink)}
+.col{display:flex;flex-direction:column;align-items:center;gap:12px}
+.cap{font:700 13px/1 "Schibsted Grotesk";letter-spacing:.08em;text-transform:uppercase;color:#3b3b39}
+.phone{width:360px;height:760px;border-radius:28px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:var(--ground);box-shadow:0 18px 40px -14px rgba(0,0,0,.4)}
+.ms{font-family:"Material Symbols Outlined";font-size:22px;line-height:1;font-weight:400;font-style:normal}
+.num{font-variant-numeric:normal}.rows .num{font-variant-numeric:tabular-nums}
+.status{height:28px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;font-weight:600;font-size:12px}
+.status .ic{display:flex;gap:4px}.status .ms{font-size:15px}
+.body{flex:1;position:relative;overflow:hidden}
+.top{display:flex;justify-content:space-between;align-items:center;padding:8px 20px 12px}
+.word{font-weight:900;font-size:21px;letter-spacing:-.03em}
+.field{position:relative;height:196px}
+.field svg{display:block}
+.slab{position:absolute;left:0;bottom:-1px;background:var(--ground);padding:14px 22px 6px 20px}
+.total{font-weight:800;font-size:54px;letter-spacing:-.045em;line-height:.95}
+.sub{font-size:14px;color:var(--ink2);margin-top:6px}
+.legend{display:flex;gap:16px;padding:12px 20px 4px;font-size:12px;font-weight:600}
+.legend span{display:flex;align-items:center;gap:6px}
+.sw{width:14px;height:14px;display:inline-block}
+.rows{padding:4px 20px 0}
+.row{display:flex;align-items:center;gap:12px;height:50px;border-bottom:1px solid var(--line)}
+.chip{width:10px;height:30px}
+.row .n{flex:1;font-weight:600;font-size:14px}
+.row .n small{display:block;font-weight:400;font-size:11.5px;color:var(--ink2)}
+.row .v{text-align:right;font-size:14px;font-weight:600}
+.row .v small{display:block;font-weight:400;font-size:11.5px;color:var(--ink2)}
+.route{margin:14px 16px 0;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:12px 12px 12px 16px}
+.route .t{font-size:13px;color:#cfcfcf}.route .t b{display:block;color:#fff;font-size:17px;font-weight:700;margin-top:1px}
+.btn{height:48px;padding:0 18px;background:var(--yel);color:var(--ink);font-weight:800;font-size:15px;display:grid;place-items:center}
+.nav{height:76px;border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center;padding-bottom:6px;background:#fff}
+.nav div{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11.5px;font-weight:600;color:var(--ink2);width:62px}
+.nav .pill{width:56px;height:30px;border-radius:15px;display:grid;place-items:center}
+.nav .on{color:var(--ink)} .nav .on .pill{background:var(--ink);color:#fff}
+/* cofre */
+.h1{font-weight:900;font-size:34px;letter-spacing:-.04em;padding:6px 20px 0;line-height:1}
+.h1sub{font-size:14px;color:var(--ink2);padding:6px 20px 0}
+.mirror{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px 20px 0}
+.mirror .lab{font-size:11.5px;font-weight:700;margin-top:6px}
+.mirror .lab small{display:block;font-weight:400;color:var(--ink2)}
+.say{padding:12px 20px 0;font-size:19px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+.disc{padding:4px 20px 0;font-size:11px;color:var(--ink2)}
+.racha{padding:16px 20px 0}
+.racha .hd{display:flex;justify-content:space-between;font-size:13px;font-weight:700}
+.racha .hd span:last-child{font-weight:500;color:var(--ink2)}
+.bars{display:flex;gap:5px;margin-top:8px;align-items:flex-end}
+.bars i{width:14px;height:34px;background:var(--cy)}
+.bars i.c{background:transparent;border:1.5px solid var(--ink);height:34px}
+.goal{margin:14px 16px 0;border:2px solid var(--ink);padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
+.goal b{font-size:16px}.goal small{display:block;font-size:12px;color:var(--ink2);margin-top:2px}
+.seal{margin:10px 16px 0;height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;color:#fff;font-size:13px;font-weight:700;
+  background:repeating-linear-gradient(90deg,var(--ink) 0 5px,#2a2a2a 5px 6px)}
+.seal span:last-child{color:var(--yel)}
+</style></head>
+<body>
+<div class="col">
+<div class="phone">
+  <div class="status"><span>9:41</span><span class="ic"><span class="ms">signal_cellular_alt</span><span class="ms">wifi</span><span class="ms">battery_full</span></span></div>
+  <div class="body">
+    <div class="top"><span class="word">Ahorra+</span><span class="ms">notifications</span></div>
+    <div class="field"><svg id="f1" width="360" height="196"></svg>
+      <div class="slab"><div class="total num">$447,84</div><div class="sub num">Bs 223.352,20 · tasa BCV 498,7321</div></div>
+    </div>
+    <div class="legend"><span><i class="sw" style="background:var(--mag)"></i>Bs 27 %</span><span><i class="sw" style="background:var(--cy)"></i>USD 54 %</span><span><i class="sw" style="background:var(--yel)"></i>USDT 19 %</span></div>
+    <div class="rows">
+      <div class="row"><i class="chip" style="background:var(--mag)"></i><span class="n">Banco Orinoco<small>Corriente Bs</small></span><span class="v num">Bs 48.210,55<small>$96,67</small></span></div>
+      <div class="row"><i class="chip" style="background:var(--mag)"></i><span class="n">Banco Ávila<small>Ahorro Bs</small></span><span class="v num">Bs 12.904,10<small>$25,87</small></span></div>
+      <div class="row"><i class="chip" style="background:var(--cy)"></i><span class="n">Banco Ávila<small>Divisas USD</small></span><span class="v num">$240,00<small>Bs 119.695,70</small></span></div>
+      <div class="row"><i class="chip" style="background:var(--yel)"></i><span class="n">CriptoAndes<small>USDT · solo lectura</small></span><span class="v num">85,30 USDT<small>Bs 42.541,85</small></span></div>
+    </div>
+    <div class="route"><span class="t">Viaje en marzo<b class="num">Hoy toca apartar $1,47</b></span><span class="btn">Apartar</span></div>
+  </div>
+  <div class="nav">
+    <div class="on"><span class="pill"><span class="ms">home</span></span>Inicio</div>
+    <div><span class="pill"><span class="ms">savings</span></span>Cofre</div>
+    <div><span class="pill"><span class="ms">credit_card</span></span>Pagar</div>
+    <div><span class="pill"><span class="ms">stars</span></span>Puntos</div>
+    <div><span class="pill"><span class="ms">menu</span></span>Más</div>
+  </div>
+</div>
+<span class="cap">Inicio</span></div>
+
+<div class="col">
+<div class="phone">
+  <div class="status"><span>9:41</span><span class="ic"><span class="ms">signal_cellular_alt</span><span class="ms">wifi</span><span class="ms">battery_full</span></span></div>
+  <div class="body">
+    <div class="top"><span class="word">Ahorra+</span><span class="ms">notifications</span></div>
+    <div class="h1">Cofre Protector</div>
+    <div class="h1sub num">$196,40 apartados en 2 metas</div>
+    <div class="mirror">
+      <div><svg id="m1" width="150" height="120"></svg><div class="lab">Si lo dejabas en Bs<small class="num">valdría $185,80</small></div></div>
+      <div><svg id="m2" width="150" height="120"></svg><div class="lab">En tu cofre<small class="num">sigue en $196,40</small></div></div>
+    </div>
+    <div class="say num">Tu cofre te protegió de perder Bs 5.289,30 este mes.</div>
+    <div class="disc">Simulación informativa, no asesoría.</div>
+    <div class="racha"><div class="hd"><span>Racha de 16 días</span><span class="num">1,25x · 1 colchón libre</span></div>
+      <div class="bars"><i></i><i></i><i></i><i></i><i></i><i class="c"></i><i></i><i></i><i></i><i></i><i></i><i class="c"></i><i></i><i></i><i></i><i></i></div></div>
+    <div class="goal"><span><b>Viaje en marzo</b><small class="num">$112,40 de $300 · hoy toca $1,47</small></span><span class="btn" style="height:40px;padding:0 14px">Apartar</span></div>
+    <div class="seal"><span>Sellado hasta 15 mar 2027</span><span class="num">$50,00</span></div>
+  </div>
+  <div class="nav">
+    <div><span class="pill"><span class="ms">home</span></span>Inicio</div>
+    <div class="on"><span class="pill"><span class="ms">savings</span></span>Cofre</div>
+    <div><span class="pill"><span class="ms">credit_card</span></span>Pagar</div>
+    <div><span class="pill"><span class="ms">stars</span></span>Puntos</div>
+    <div><span class="pill"><span class="ms">menu</span></span>Más</div>
+  </div>
+</div>
+<span class="cap">Cofre Protector</span></div>
+<script>
+const NS='http://www.w3.org/2000/svg';
+const C={m:'#E4007C',c:'#0098DB',y:'#FFD100',k:'#111111'};
+function line(svg,x,w,h,col,y0=0){const r=document.createElementNS(NS,'rect');r.setAttribute('x',x);r.setAttribute('y',y0);r.setAttribute('width',w);r.setAttribute('height',h);r.setAttribute('fill',col);svg.appendChild(r);}
+// Inducción cromática: color lines at the composition's share, black hairlines between; transitions dither.
+(function(){const s=document.getElementById('f1');const W=360,H=196,step=6;
+  const segs=[['m',0,.27],['c',.27,.81],['y',.81,1]];
+  for(let x=0;x<W;x+=step){const t=x/W;let col='c';
+    for(const [k,a,b] of segs){if(t>=a&&t<b)col=k;}
+    // dither near boundaries
+    for(const [k,a] of segs){if(a>0&&Math.abs(t-a)<.05){const idx=Math.round(x/step);const prev=segs[segs.findIndex(z=>z[1]===a)-1][0];col=(idx%2)?k:prev;}}
+    line(s,x,3.4,H,C[col]); line(s,x+4.4,.9,H,C.k);
+  }})();
+// Espejo: Bs lines open up (loss), USD lines hold.
+(function(){const a=document.getElementById('m1'),b=document.getElementById('m2');
+  let x=0,g=3;while(x<150){line(a,x,3,120,C.m);x+=3+g;g*=1.13;}
+  for(let x=0;x<150;x+=6){line(b,x,3.4,120,C.c);line(b,x+4.4,.9,120,C.k);}
+})();
+</script>
+</body></html>

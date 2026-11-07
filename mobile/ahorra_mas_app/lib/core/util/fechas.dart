@@ -29,6 +29,17 @@ class Fechas {
   static String mesAnio(int anio, int mes) =>
       DateFormat('MMMM y', 'es').format(DateTime(anio, mes));
 
+  /// Fecha corta: `07 nov`.
+  static String libreta(DateTime? d) => d == null
+      ? '—'
+      : '${d.toLocal().day.toString().padLeft(2, '0')} ${_mesCorto(d.toLocal().month)}';
+
+  /// Fecha corta con año: `15 mar 2027`.
+  static String libretaAnio(DateTime? d) => d == null ? '—' : '${libreta(d)} ${d.toLocal().year}';
+
+  static String _mesCorto(int mes) =>
+      const ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'][mes - 1];
+
   /// Letra del día de la semana: L M M J V S D.
   static String inicialDia(DateTime d) => const ['L', 'M', 'M', 'J', 'V', 'S', 'D'][d.weekday - 1];
 

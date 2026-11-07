@@ -77,7 +77,7 @@ pagos responden `403 KYC_PENDIENTE`.
 * `POST /auth/saldo-rapido` (Bearer + `X-Step-Up` nivel `pin`) → `{"tokenSaldo": "eyJ...", "expiraEn": "..."}`
   Token de alcance `saldo:leer`, ligado al dispositivo. La app lo guarda en Keychain/Keystore.
 * `GET /saldo-rapido` con `Authorization: Bearer <tokenSaldo>` y `X-Dispositivo: <huella>` →
-  `{"totalBsCts": 152030044, "totalUsdCts": 304512, "actualizadoEn": "..."}` (sin detalle por banco).
+  `{"totalBsCts": 152030044, "totalUsdCts": 304512, "actualizadoEn": "..."}` más `"bancos": [{"nombre", "tipo", "totalBsCts", "totalUsdCts"}]` (desglose por institución, sin cuentas ni movimientos; solo con el token ligado al equipo).
 * `DELETE /auth/saldo-rapido` → `204`, desactiva y revoca (no requiere step-up: reduce privilegios).
 * `POST /dispositivos/actual/revocar` `{"motivo": "cambio_sim|root|robo|usuario"}` → anula token y sesión.
 

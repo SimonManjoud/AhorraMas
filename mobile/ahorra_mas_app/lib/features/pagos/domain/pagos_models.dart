@@ -25,6 +25,7 @@ class Tarjeta {
     this.titularConfirmado,
     required this.esPropia,
     this.estadoCuenta,
+    this.marca,
   });
 
   final int idTarjeta;
@@ -35,6 +36,9 @@ class Tarjeta {
   final String? titularConfirmado;
   final bool esPropia;
   final EstadoCuentaTdc? estadoCuenta;
+
+  /// Red de la tarjeta: `visa|mastercard`, o `null` si el emisor no la informa.
+  final String? marca;
 
   String get nombreVisible => alias ?? '$banco •••• $ultimos4';
 }

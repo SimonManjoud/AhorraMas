@@ -8,13 +8,19 @@ import '../../../core/session/session_controller.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/util/fechas.dart';
 import '../../../core/widgets/comunes.dart';
-import '../../../core/widgets/dinero_widgets.dart';
+import '../../../core/widgets/libreta.dart';
+import '../../auth/domain/recuerdo_equipo.dart';
+import '../../auth/presentation/auth_providers.dart';
+import '../../cofre/domain/cofre_models.dart';
 import '../../cofre/presentation/cofre_providers.dart';
+import '../../cofre/presentation/widgets/boton_apartar.dart';
 import '../domain/consolidacion_models.dart';
 import 'consolidacion_providers.dart';
 import 'vincular_bancos.dart';
+import 'widgets/grafico_posicion.dart';
 
-/// "Mi dinero": posición global en Bs y USD a tasa BCV, por institución y cuenta.
+/// "Mi dinero": tapa vino con la posición global en USD y Bs y la tasa BCV del día; debajo,
+/// la dona de distribución por cuenta (toca una porción para saber qué cuenta es) y la Ruta del día.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -41,53 +47,68 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final usuario = ref.watch(sessionProvider)?.usuario;
     final consolidado = ref.watch(consolidadoProvider);
+    // El equipo recuerda los bancos (sin montos) para mostrarlos en el login la próxima vez.
+    ref.listen(consolidadoProvider, (_, s) {
+      final d = s.value;
+      if (d == null) return;
+      ref.read(recuerdoEquipoServiceProvider).recordarBancos([
+        for (final i in d.instituciones) BancoRecordado(nombre: i.nombre, tipo: i.tipo),
+      ]);
+    });
+    final c = AhorraColores.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('Hola, ${usuario?.primerNombre ?? ''}'),
+        titleSpacing: 16,
+        title: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(color: c.tapa, borderRadius: BorderRadius.circular(12)),
+              child: Icon(Icons.savings_rounded, size: 20, color: c.sobreTapa),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Hola, ${usuario?.primerNombre ?? ''}',
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
         actions: [
           IconButton(
             tooltip: 'Notificaciones',
             onPressed: () => context.push('/mas/notificaciones'),
-            icon: const Icon(Icons.notifications_outlined),
+            icon: const Icon(Icons.notifications_none_rounded),
           ),
+          const SizedBox(width: 8),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        key: const ValueKey('btn-vincular'),
-        onPressed: () => iniciarVinculacion(context, ref),
-        icon: const Icon(Icons.add_link),
-        label: const Text('Vincular bancos'),
-      ),
       body: RefreshIndicator(
+        color: c.tapa,
         onRefresh: () => _refrescar(ref),
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 4, 16, 96),
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
           children: [
             VistaAsync<Consolidado>(
               valor: consolidado,
               alReintentar: () => ref.invalidate(consolidadoProvider),
-              datos: (c) => Column(
+              datos: (datos) => Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _PosicionGlobal(consolidado: c),
-                  const _RutaDeHoy(),
-                  TituloSeccion(
-                    'Mis instituciones',
-                    accion: TextButton(
-                      onPressed: () => context.push('/inicio/consentimientos'),
-                      child: const Text('Gestionar vínculos'),
-                    ),
-                  ),
-                  if (c.instituciones.isEmpty)
+                  _Tapa(consolidado: datos),
+                  const SizedBox(height: 4),
+                  _Vinculos(instituciones: datos.instituciones.length),
+                  const SizedBox(height: 4),
+                  if (datos.instituciones.isEmpty)
                     const _SinBancos()
                   else
-                    for (final i in c.instituciones) ...[
-                      _TarjetaInstitucion(institucion: i),
-                      const SizedBox(height: 12),
-                    ],
-                  const SizedBox(height: 8),
-                  const AvisoSinClaves(compacto: true),
+                    GraficoPosicion(consolidado: datos),
+                  const _RutaDeHoy(),
+                  const SizedBox(height: 20),
+                  _Pie(consolidado: datos),
                 ],
               ),
             ),
@@ -98,97 +119,203 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-class _PosicionGlobal extends StatelessWidget {
-  const _PosicionGlobal({required this.consolidado});
+/// Tapa vino: "Posición global", total en USD a escala de titular, Bs y la tasa BCV en una píldora.
+class _Tapa extends StatelessWidget {
+  const _Tapa({required this.consolidado});
 
   final Consolidado consolidado;
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final c = AhorraColores.of(context);
     final t = Theme.of(context).textTheme;
-    final sobre = cs.onPrimary;
+    final cuentas = consolidado.cuentas.length;
+    final tasa = consolidado.tasa;
     return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        gradient: LinearGradient(
-          colors: [cs.primary, Color.lerp(cs.primary, Colors.black, 0.25)!],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+      decoration: BoxDecoration(color: c.tapa, borderRadius: BorderRadius.circular(28)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Posición global', style: t.labelLarge?.copyWith(color: sobre.withValues(alpha: 0.85))),
-          const SizedBox(height: 6),
+          Row(
+            children: [
+              Expanded(
+                child: Text('Posición global',
+                    style: t.titleSmall?.copyWith(color: c.sobreTapaTenue, fontWeight: FontWeight.w600)),
+              ),
+              if (cuentas > 0)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text('$cuentas ${cuentas == 1 ? 'cuenta' : 'cuentas'}',
+                      style: t.labelMedium?.copyWith(color: c.sobreTapa)),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              Dinero.usd(consolidado.totalUsdCts),
+              key: const ValueKey('total-usd'),
+              style: t.displayLarge?.copyWith(color: c.sobreTapa),
+            ),
+          ),
+          const SizedBox(height: 4),
           Text(
             Dinero.bs(consolidado.totalBsCts),
             key: const ValueKey('total-bs'),
-            style: t.headlineMedium?.copyWith(color: sobre, fontWeight: FontWeight.w800),
+            style: AppTheme.cifra(tamano: 16, peso: FontWeight.w600, color: c.sobreTapaTenue),
           ),
-          Text(
-            Dinero.usd(consolidado.totalUsdCts),
-            key: const ValueKey('total-usd'),
-            style: t.titleLarge?.copyWith(color: sobre.withValues(alpha: 0.95)),
-          ),
-          const SizedBox(height: 14),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: sobre.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  'Tasa BCV ${Dinero.tasa(consolidado.tasa.valorBsX10000)} · ${Fechas.corta(consolidado.tasa.fecha)}',
-                  style: t.bodySmall?.copyWith(color: sobre, fontWeight: FontWeight.w600),
-                ),
-              ),
-              Text('Actualizado ${Fechas.conHora(consolidado.actualizadoEn)}',
-                  style: t.bodySmall?.copyWith(color: sobre.withValues(alpha: 0.8))),
-            ],
-          ),
+          if (tasa.valorBsX10000 > 0) ...[
+            const SizedBox(height: 16),
+            PildoraTasa(
+              tasa: Dinero.numero(Dinero.dividirRedondeando(tasa.valorBsX10000, 100)),
+              fecha: Fechas.libreta(tasa.fecha),
+              sobreTapa: true,
+            ),
+          ],
         ],
       ),
     );
   }
 }
 
+/// La cuota de hoy de la meta pendiente, en una lámina con su botón de un toque.
 class _RutaDeHoy extends ConsumerWidget {
   const _RutaDeHoy();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final rutas = ref.watch(rutasDelDiaProvider).value ?? const [];
+    final rutas = ref.watch(rutasDelDiaProvider).value ?? const <RutaDelDia>[];
+    if (rutas.isEmpty) return const SizedBox.shrink();
     final pendientes = rutas.where((r) => !r.cumplida).toList();
-    if (rutas.isEmpty) return const SizedBox(height: 4);
-    final colores = AhorraColores.of(context);
+    final c = AhorraColores.of(context);
+    final cs = Theme.of(context).colorScheme;
+    final t = Theme.of(context).textTheme;
+    final ruta = pendientes.isEmpty ? rutas.first : pendientes.first;
     return Padding(
       padding: const EdgeInsets.only(top: 16),
-      child: Card(
-        color: colores.cofreContenedor,
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          leading: Icon(Icons.route_outlined, color: colores.alCofre),
-          title: Text(
-            pendientes.isEmpty ? '¡Cumpliste tu Ruta de hoy!' : pendientes.first.mensaje,
-            style: TextStyle(color: colores.alCofre, fontWeight: FontWeight.w600),
-          ),
-          subtitle: pendientes.length > 1
-              ? Text('y ${pendientes.length - 1} meta(s) más', style: TextStyle(color: colores.alCofre))
-              : null,
-          trailing: Icon(Icons.chevron_right, color: colores.alCofre),
-          onTap: () => pendientes.isEmpty
-              ? context.go('/cofre')
-              : context.go('/cofre/meta/${pendientes.first.idMeta}'),
-        ),
+      child: Lamina(
+        onTap: () => context.go('/cofre/meta/${ruta.idMeta}'),
+        child: pendientes.isEmpty
+            ? Row(
+                children: [
+                  CircleAvatar(
+                    radius: 18,
+                    backgroundColor: c.exito.withValues(alpha: 0.14),
+                    child: Icon(Icons.check_rounded, size: 20, color: c.exito),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(child: Text('¡Cumpliste tu Ruta de hoy!', style: t.titleSmall)),
+                ],
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 18,
+                        backgroundColor: cs.primaryContainer,
+                        child: Icon(Icons.flag_rounded, size: 18, color: cs.onPrimaryContainer),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Ruta de hoy · ${Fechas.libreta(ruta.fecha ?? DateTime.now())}',
+                                style: t.bodySmall?.copyWith(color: c.tintaGris)),
+                            Text('${ruta.nombreMeta}, hoy toca', overflow: TextOverflow.ellipsis, style: t.titleSmall),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(Dinero.usd(ruta.faltanteHoyUsdCts),
+                          style: AppTheme.cifra(tamano: 18, peso: FontWeight.w800, color: c.tinta)),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  BotonApartarCuota(ruta: ruta),
+                  if (pendientes.length > 1)
+                    Align(
+                      alignment: Alignment.center,
+                      child: TextButton(
+                        onPressed: () => context.go('/cofre'),
+                        child: Text('y ${pendientes.length - 1} más en tu Cofre'),
+                      ),
+                    ),
+                ],
+              ),
       ),
+    );
+  }
+}
+
+/// Línea de vínculos bajo la tapa: cuántas instituciones y acceso a sus consentimientos.
+class _Vinculos extends StatelessWidget {
+  const _Vinculos({required this.instituciones});
+
+  final int instituciones;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = AhorraColores.of(context);
+    final texto = switch (instituciones) {
+      0 => 'Sin instituciones vinculadas',
+      1 => '1 institución vinculada',
+      _ => '$instituciones instituciones vinculadas',
+    };
+    return Row(
+      children: [
+        const SizedBox(width: 4),
+        Icon(Icons.link_rounded, size: 18, color: c.tintaGris),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(texto, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: c.tintaGris)),
+        ),
+        TextButton(
+          onPressed: () => context.push('/inicio/consentimientos'),
+          child: const Text('Gestionar vínculos'),
+        ),
+      ],
+    );
+  }
+}
+
+/// Pie: botón para vincular más bancos, regla de oro y hora de sincronización.
+class _Pie extends ConsumerWidget {
+  const _Pie({required this.consolidado});
+
+  final Consolidado consolidado;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final c = AhorraColores.of(context);
+    final t = Theme.of(context).textTheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        OutlinedButton.icon(
+          key: const ValueKey('btn-vincular'),
+          onPressed: () => iniciarVinculacion(context, ref),
+          icon: const Icon(Icons.add_rounded, size: 20),
+          label: const Text('Vincular bancos'),
+        ),
+        const SizedBox(height: 16),
+        const AvisoSinClaves(compacto: true),
+        const SizedBox(height: 4),
+        Padding(
+          padding: const EdgeInsets.only(left: 20),
+          child: Text('Sincronizado ${Fechas.conHora(consolidado.actualizadoEn)}',
+              style: t.bodySmall?.copyWith(color: c.tintaGris)),
+        ),
+      ],
     );
   }
 }
@@ -198,71 +325,20 @@ class _SinBancos extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            Icon(Icons.account_balance_outlined, size: 40, color: Theme.of(context).colorScheme.primary),
-            const SizedBox(height: 8),
-            const Text('Aún no vinculas bancos', style: TextStyle(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 4),
-            const Text(
-              'Vincula tus bancos y billeteras para ver todo tu dinero en un solo lugar, en Bs y USD.',
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _TarjetaInstitucion extends StatelessWidget {
-  const _TarjetaInstitucion({required this.institucion});
-
-  final InstitucionConsolidada institucion;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final cripto = institucion.tipo == 'plataforma_cripto';
-    return Card(
-      clipBehavior: Clip.antiAlias,
+    final t = Theme.of(context).textTheme;
+    final c = AhorraColores.of(context);
+    return Lamina(
+      relleno: const EdgeInsets.all(20),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ListTile(
-            leading: CircleAvatar(
-              backgroundColor: cs.secondaryContainer,
-              child: Icon(cripto ? Icons.currency_bitcoin : Icons.account_balance, color: cs.onSecondaryContainer),
-            ),
-            title: Text(institucion.nombre, style: const TextStyle(fontWeight: FontWeight.w700)),
-            subtitle: Text(cripto ? 'Plataforma cripto' : 'Banco'),
-            trailing: MontoDual(
-              bsCts: institucion.totalBsCts,
-              usdCts: institucion.totalUsdCts,
-              alineacion: CrossAxisAlignment.end,
-            ),
+          Text('Tu libreta está en blanco', style: t.headlineSmall),
+          const SizedBox(height: 6),
+          Text(
+            'Vincula tus bancos y billeteras desde la página oficial de cada banco. Aquí verás '
+            'todo tu dinero en un solo lugar, en Bs y USD a tasa BCV.',
+            style: t.bodyMedium?.copyWith(color: c.tintaGris),
           ),
-          const Divider(height: 1),
-          for (final c in institucion.cuentas)
-            ListTile(
-              dense: true,
-              onTap: () => context.push('/inicio/cuenta/${c.idCuenta}', extra: c),
-              title: Text('${c.nombreVisible} •••• ${c.ultimos4}'),
-              subtitle: Text('${c.tipo} · ${c.moneda}${c.soloLectura ? ' · solo lectura' : ''}'),
-              trailing: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(Dinero.enMoneda(c.saldoCts, c.moneda), style: const TextStyle(fontWeight: FontWeight.w600)),
-                  Text(
-                    c.moneda == 'VES' ? '≈ ${Dinero.usd(c.saldoUsdCts)}' : '≈ ${Dinero.bs(c.saldoBsCts)}',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
-              ),
-            ),
         ],
       ),
     );

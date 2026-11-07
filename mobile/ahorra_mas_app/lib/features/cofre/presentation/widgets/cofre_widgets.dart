@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/money/dinero.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/util/fechas.dart';
+import '../../../../core/widgets/libreta.dart';
 import '../../domain/cofre_models.dart';
 
 IconData iconoCategoria(CategoriaMeta c) => switch (c) {
@@ -14,7 +15,26 @@ IconData iconoCategoria(CategoriaMeta c) => switch (c) {
       CategoriaMeta.otro => Icons.star_outline,
     };
 
-/// Tarjeta "Ruta del día": la meta convertida en la micro-acción de hoy.
+/// Etiqueta de estado impresa (no es un sello: el sello violeta es uno por vista).
+class EtiquetaLibro extends StatelessWidget {
+  const EtiquetaLibro(this.texto, {super.key, this.color});
+
+  final String texto;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final col = color ?? AhorraColores.of(context).tinta;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(border: Border.all(color: col)),
+      child: Text(texto, style: AppTheme.rubrica(color: col, tamano: 11)),
+    );
+  }
+}
+
+/// "Ruta del día": la meta convertida en la micro-acción de hoy, como bloque del libro
+/// entre regla doble y filete.
 class RutaDelDiaCard extends StatelessWidget {
   const RutaDelDiaCard({
     super.key,
@@ -31,159 +51,192 @@ class RutaDelDiaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colores = AhorraColores.of(context);
+    final c = AhorraColores.of(context);
     final t = Theme.of(context).textTheme;
     final cumplida = ruta.cumplida;
     final (etiqueta, color) = switch (ruta.estatus) {
-      'cumplida' => ('Cumplida', colores.exito),
-      'parcial' => ('Parcial', colores.enProceso),
-      'colchon' => ('Día colchón', colores.colchon),
-      'omitida' => ('Omitida', colores.peligro),
-      _ => ('Pendiente', colores.alCofre),
+      'cumplida' => ('Cumplida', c.exito),
+      'parcial' => ('Parcial', c.tinta),
+      'colchon' => ('Día colchón', c.colchon),
+      'omitida' => ('Omitida', c.tintaGris),
+      _ => ('Pendiente', c.tinta),
     };
-    return Card(
+    final detalle = t.bodySmall?.copyWith(color: c.tintaGris);
+    return Column(
       key: const ValueKey('ruta-del-dia'),
-      color: colores.cofreContenedor,
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.route, color: colores.alCofre),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text('Ruta del día',
-                      overflow: TextOverflow.ellipsis,
-                      style: t.titleSmall?.copyWith(color: colores.alCofre, fontWeight: FontWeight.w700)),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(20),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Filete(doble: true),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Align(alignment: Alignment.centerRight, child: EtiquetaLibro(etiqueta, color: color)),
+              const SizedBox(height: 10),
+              Text(ruta.mensaje, style: t.headlineSmall?.copyWith(color: c.tinta)),
+              const SizedBox(height: 8),
+              Text(
+                'Cuota: ${Dinero.usd(ruta.montoSugeridoUsdCts)} · ${Dinero.bs(ruta.montoSugeridoBsCts)} '
+                'a tasa BCV ${Dinero.tasa(ruta.tasaValorBsX10000)}',
+                style: detalle,
+              ),
+              Text(
+                '${ruta.periodosRestantes} ${ruta.periodosRestantes == 1 ? 'periodo restante' : 'periodos restantes'}'
+                '${ruta.aportadoHoyUsdCts > 0 ? ' · hoy llevas ${Dinero.usd(ruta.aportadoHoyUsdCts)}' : ''}',
+                style: detalle,
+              ),
+              if (alApartar != null && !cumplida) ...[
+                const SizedBox(height: 14),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    key: const ValueKey('btn-apartar-cuota'),
+                    onPressed: ocupado ? null : alApartar,
+                    child: ocupado
+                        ? SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: c.tintaGris),
+                          )
+                        : FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text('Apartar ${Dinero.usd(ruta.faltanteHoyUsdCts)}'),
+                                const SizedBox(width: 10),
+                                Text(
+                                  Dinero.bs(Dinero.usdABs(ruta.faltanteHoyUsdCts, ruta.tasaValorBsX10000)),
+                                  style: AppTheme.cifra(tamano: 13, color: c.sobreTapa.withValues(alpha: 0.8)),
+                                ),
+                              ],
+                            ),
+                          ),
                   ),
-                  child: Text(etiqueta, style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 12)),
                 ),
               ],
-            ),
-            const SizedBox(height: 12),
-            Text(ruta.mensaje, style: t.titleLarge?.copyWith(color: colores.alCofre, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 8),
-            Text(
-              'Cuota: ${Dinero.usd(ruta.montoSugeridoUsdCts)} · ${Dinero.bs(ruta.montoSugeridoBsCts)} '
-              'a tasa BCV ${Dinero.tasa(ruta.tasaValorBsX10000)}',
-              style: t.bodySmall?.copyWith(color: colores.alCofre),
-            ),
-            Text(
-              '${ruta.periodosRestantes} ${ruta.periodosRestantes == 1 ? 'periodo restante' : 'periodos restantes'}'
-              '${ruta.aportadoHoyUsdCts > 0 ? ' · hoy llevas ${Dinero.usd(ruta.aportadoHoyUsdCts)}' : ''}',
-              style: t.bodySmall?.copyWith(color: colores.alCofre),
-            ),
-            if (alApartar != null && !cumplida) ...[
-              const SizedBox(height: 14),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  key: const ValueKey('btn-apartar-cuota'),
-                  style: FilledButton.styleFrom(backgroundColor: colores.cofre, foregroundColor: Colors.black87),
-                  onPressed: ocupado ? null : alApartar,
-                  icon: ocupado
-                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Icon(Icons.savings),
-                  label: Text('Apartar ${Dinero.usd(ruta.faltanteHoyUsdCts)}'),
-                ),
-              ),
             ],
-          ],
+          ),
         ),
-      ),
+        const Filete(),
+      ],
     );
   }
 }
 
-/// Tarjeta de meta con progreso.
+/// Meta como bloque del libro: nombre, tira reglada de progreso, cifras y la línea de hoy.
+///
+/// [conSello] pinta el Sello de compromiso violeta; solo una meta por vista debe llevarlo.
 class MetaCard extends StatelessWidget {
-  const MetaCard({super.key, required this.meta, this.onTap});
+  const MetaCard({super.key, required this.meta, this.onTap, this.conSello = true, this.mostrarCuota = true});
 
   final Meta meta;
   final VoidCallback? onTap;
+  final bool conSello;
+
+  /// Oculta la línea "Hoy toca" cuando la cuota ya se muestra a escala de titular.
+  final bool mostrarCuota;
 
   @override
   Widget build(BuildContext context) {
-    final colores = AhorraColores.of(context);
-    final cs = Theme.of(context).colorScheme;
+    final c = AhorraColores.of(context);
     final t = Theme.of(context).textTheme;
     final cuota = meta.cuotaHoy;
-    return Card(
-      clipBehavior: Clip.antiAlias,
+    final sello = meta.selloActivo;
+    return Material(
+      type: MaterialType.transparency,
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(vertical: 14),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  CircleAvatar(
-                    backgroundColor: colores.cofreContenedor,
-                    child: Icon(iconoCategoria(meta.categoria), color: colores.alCofre),
-                  ),
-                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(meta.nombre, style: t.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
-                        Text(
-                          '${meta.categoria.etiqueta} · ${meta.frecuenciaCuota.etiqueta.toLowerCase()} · '
-                          'hasta ${Fechas.media(meta.fechaObjetivo)}',
-                          style: t.bodySmall,
-                        ),
+                        Text(meta.nombre, style: t.titleMedium),
+                        const SizedBox(height: 2),
+                        Rubrica('${meta.categoria.etiqueta} · ${meta.frecuenciaCuota.etiqueta}'),
                       ],
                     ),
                   ),
-                  if (meta.selloActivo != null) Icon(Icons.lock, color: colores.cofre, size: 20),
+                  if (sello != null && conSello)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: SelloRectangular(
+                        titulo: 'Sellado',
+                        detalle: '${Dinero.usd(sello.montoSelladoUsdCts)} · ${Fechas.libreta(sello.fechaLiberacion)}',
+                      ),
+                    )
+                  else if (sello != null)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.lock_outline, size: 14, color: c.tintaGris),
+                        const SizedBox(width: 4),
+                        Text('${Dinero.usd(sello.montoSelladoUsdCts)} sellado',
+                            style: AppTheme.cifra(tamano: 11.5, color: c.tintaGris)),
+                      ],
+                    ),
                   if (!meta.activa)
                     Padding(
-                      padding: const EdgeInsets.only(left: 6),
-                      child: Text(meta.estatus, style: t.labelSmall?.copyWith(color: cs.outline)),
+                      padding: const EdgeInsets.only(left: 8),
+                      child: EtiquetaLibro(meta.estatus, color: c.tintaGris),
                     ),
                 ],
               ),
-              const SizedBox(height: 14),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: LinearProgressIndicator(
-                  value: Dinero.fraccionPb(meta.progresoPb),
-                  minHeight: 10,
-                  color: colores.cofre,
-                  backgroundColor: colores.cofreContenedor,
-                ),
-              ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
+              TiraProgreso(fraccion: Dinero.fraccionPb(meta.progresoPb)),
+              const SizedBox(height: 6),
               Row(
                 children: [
                   Expanded(
-                    child: Text('${Dinero.usd(meta.acumuladoUsdCts)} de ${Dinero.usd(meta.montoObjetivoUsdCts)}',
-                        overflow: TextOverflow.ellipsis,
-                        style: t.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(Dinero.usd(meta.acumuladoUsdCts),
+                              style: AppTheme.cifra(tamano: 12.5, peso: FontWeight.w700, color: c.tinta)),
+                          Text(' de ', style: t.bodySmall?.copyWith(color: c.tintaGris)),
+                          Text(Dinero.usd(meta.montoObjetivoUsdCts),
+                              style: AppTheme.cifra(tamano: 12.5, color: c.tinta)),
+                        ],
+                      ),
+                    ),
                   ),
-                  Text(Dinero.porcentajePb(meta.progresoPb), style: t.bodySmall),
+                  const SizedBox(width: 8),
+                  Text(Fechas.libretaAnio(meta.fechaObjetivo), style: AppTheme.cifra(tamano: 12, color: c.tintaGris)),
                 ],
               ),
-              if (cuota != null && meta.activa) ...[
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Icon(cuota.cumplida ? Icons.check_circle : Icons.route_outlined,
-                        size: 16, color: cuota.cumplida ? colores.exito : colores.cofre),
-                    const SizedBox(width: 6),
-                    Expanded(child: Text(cuota.mensaje, style: t.bodySmall)),
-                  ],
-                ),
+              if (cuota != null && meta.activa && mostrarCuota) ...[
+                const SizedBox(height: 10),
+                if (cuota.cumplida)
+                  Row(
+                    children: [
+                      Icon(Icons.check, size: 16, color: c.exito),
+                      const SizedBox(width: 6),
+                      Expanded(child: Text('Cuota de hoy cumplida', style: t.bodySmall)),
+                    ],
+                  )
+                else
+                  Row(
+                    children: [
+                      Text(cuota.estatus == 'colchon' ? 'Hoy (día colchón)' : 'Hoy toca', style: t.bodySmall),
+                      const SizedBox(width: 8),
+                      const Expanded(child: GuiaPunteada()),
+                      const SizedBox(width: 8),
+                      Text(Dinero.usd(cuota.faltanteHoyUsdCts),
+                          style: AppTheme.cifra(tamano: 13, peso: FontWeight.w700, color: c.tinta)),
+                    ],
+                  ),
               ],
             ],
           ),
@@ -193,7 +246,7 @@ class MetaCard extends StatelessWidget {
   }
 }
 
-/// Resumen compacto de la racha (llama + días + multiplicador + colchones).
+/// Resumen compacto de la racha: días, multiplicador y colchones, en tinta.
 class RachaResumen extends StatelessWidget {
   const RachaResumen({super.key, required this.racha, this.onTap});
 
@@ -202,49 +255,37 @@ class RachaResumen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colores = AhorraColores.of(context);
+    final c = AhorraColores.of(context);
     final t = Theme.of(context).textTheme;
     final activa = racha.diasConsecutivos > 0;
-    return Card(
+    return Material(
+      type: MaterialType.transparency,
       child: InkWell(
-        borderRadius: BorderRadius.circular(20),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(vertical: 10),
           child: Row(
             children: [
-              Icon(Icons.local_fire_department, size: 40, color: activa ? Colors.deepOrange : Colors.grey),
-              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       activa ? '${racha.diasConsecutivos} días de racha' : 'Empieza tu racha hoy',
-                      style: t.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                      style: t.titleMedium,
                     ),
+                    const SizedBox(height: 2),
                     Text(
-                      racha.aporteHoy ? 'Ya aportaste hoy 🙌' : 'Cualquier aporte, aunque sea pequeño, la mantiene',
-                      style: t.bodySmall,
+                      '${Dinero.multiplicador(racha.multiplicadorX100)} · '
+                      '${racha.colchonesDisponibles} '
+                      '${racha.colchonesDisponibles == 1 ? 'colchón libre' : 'colchones libres'}'
+                      '${racha.aporteHoy ? ' · ya aportaste hoy' : ''}',
+                      style: AppTheme.cifra(tamano: 11.5, color: c.tintaGris),
                     ),
                   ],
                 ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(Dinero.multiplicador(racha.multiplicadorX100),
-                      style: t.titleLarge?.copyWith(color: colores.cofre, fontWeight: FontWeight.w800)),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.shield_outlined, size: 14, color: colores.colchon),
-                      const SizedBox(width: 2),
-                      Text('${racha.colchonesDisponibles}', style: t.bodySmall),
-                    ],
-                  ),
-                ],
-              ),
+              Icon(Icons.chevron_right, color: c.tintaGris),
             ],
           ),
         ),
@@ -253,57 +294,44 @@ class RachaResumen extends StatelessWidget {
   }
 }
 
-/// Franja de los últimos días de racha (aporte / colchón / sin aporte).
+/// Marcas de los últimos días de racha: aporte lleno, día colchón punteado, sin aporte vacío.
 class FranjaDias extends StatelessWidget {
-  const FranjaDias({super.key, required this.dias});
+  const FranjaDias({super.key, required this.dias, this.columnas = 8});
 
   final List<DiaRacha> dias;
+  final int columnas;
 
   @override
   Widget build(BuildContext context) {
-    final colores = AhorraColores.of(context);
-    final cs = Theme.of(context).colorScheme;
     final ordenados = [...dias]..sort((a, b) => a.fecha.compareTo(b.fecha));
-    return Wrap(
-      spacing: 6,
-      runSpacing: 8,
-      children: [
-        for (final d in ordenados)
-          Tooltip(
-            message: '${Fechas.corta(d.fecha)} · ${switch (d.tipo) {
-              TipoDiaRacha.aporte => 'aporte',
-              TipoDiaRacha.colchon => 'día colchón',
-              TipoDiaRacha.sinAporte => 'sin aporte',
-            }}',
-            child: Column(
-              children: [
-                Container(
-                  width: 30,
-                  height: 30,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: switch (d.tipo) {
-                      TipoDiaRacha.aporte => Colors.deepOrange,
-                      TipoDiaRacha.colchon => colores.colchon,
-                      TipoDiaRacha.sinAporte => cs.surfaceContainerHighest,
-                    },
-                  ),
-                  child: Icon(
-                    switch (d.tipo) {
-                      TipoDiaRacha.aporte => Icons.local_fire_department,
-                      TipoDiaRacha.colchon => Icons.shield,
-                      TipoDiaRacha.sinAporte => Icons.remove,
-                    },
-                    size: 16,
-                    color: d.tipo == TipoDiaRacha.sinAporte ? cs.outline : Colors.white,
-                  ),
+    return LayoutBuilder(
+      builder: (context, restricciones) {
+        const hueco = 5.0;
+        final ancho = (restricciones.maxWidth - hueco * (columnas - 1)) / columnas;
+        return Wrap(
+          spacing: hueco,
+          runSpacing: hueco,
+          children: [
+            for (final d in ordenados)
+              SizedBox(
+                width: ancho,
+                child: MarcaDia(
+                  etiqueta: d.fecha.day.toString().padLeft(2, '0'),
+                  tipo: switch (d.tipo) {
+                    TipoDiaRacha.aporte => TipoMarca.aporte,
+                    TipoDiaRacha.colchon => TipoMarca.colchon,
+                    TipoDiaRacha.sinAporte => TipoMarca.sinAporte,
+                  },
+                  descripcion: '${Fechas.media(d.fecha)} · ${switch (d.tipo) {
+                    TipoDiaRacha.aporte => 'aporte',
+                    TipoDiaRacha.colchon => 'día colchón',
+                    TipoDiaRacha.sinAporte => 'sin aporte',
+                  }}',
                 ),
-                const SizedBox(height: 2),
-                Text(Fechas.inicialDia(d.fecha), style: Theme.of(context).textTheme.labelSmall),
-              ],
-            ),
-          ),
-      ],
+              ),
+          ],
+        );
+      },
     );
   }
 }

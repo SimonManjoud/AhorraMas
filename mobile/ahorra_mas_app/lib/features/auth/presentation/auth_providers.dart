@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/di/providers.dart';
 import '../domain/auth_models.dart';
+import '../domain/recuerdo_equipo.dart';
 import '../domain/saldo_rapido_service.dart';
 
 final saldoRapidoServiceProvider = Provider<SaldoRapidoService>(
@@ -14,3 +15,6 @@ final saldoRapidoActivoProvider =
 
 final perfilProvider =
     FutureProvider.autoDispose<Perfil>((ref) => ref.watch(authRepositoryProvider).perfil());
+
+final recuerdoEquipoServiceProvider =
+    Provider<RecuerdoEquipoService>((ref) => RecuerdoEquipoService(ref.watch(almacenSeguroProvider)));

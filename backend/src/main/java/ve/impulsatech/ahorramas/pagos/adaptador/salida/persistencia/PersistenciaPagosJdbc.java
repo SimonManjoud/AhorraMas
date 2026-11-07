@@ -48,12 +48,13 @@ class PersistenciaPagosJdbc implements Repositorio {
     public long guardarTarjeta(long idUsuario, long idInstitucion, TarjetaExterna t, OffsetDateTime ahora) {
         return jdbc.sql("""
                 INSERT INTO pagos.tarjeta_credito (id_usuario, id_institucion, ref_tarjeta_emisor, ultimos_4, titular_confirmado, es_propia,
-                    fecha_registro, estatus)
-                VALUES (:u, :i, :ref, :u4, :tit, TRUE, :f, 'activa')
-                ON CONFLICT (id_usuario, id_institucion, ref_tarjeta_emisor) DO UPDATE SET ultimos_4 = EXCLUDED.ultimos_4, estatus = 'activa'
+                    fecha_registro, estatus, marca)
+                VALUES (:u, :i, :ref, :u4, :tit, TRUE, :f, 'activa', :m)
+                ON CONFLICT (id_usuario, id_institucion, ref_tarjeta_emisor) DO UPDATE SET ultimos_4 = EXCLUDED.ultimos_4, estatus = 'activa',
+                    marca = COALESCE(EXCLUDED.marca, pagos.tarjeta_credito.marca)
                 RETURNING id_tarjeta
                 """).param("u", idUsuario).param("i", idInstitucion).param("ref", t.refTarjeta()).param("u4", t.ultimos4())
-                .param("tit", t.titular() == null ? "TITULAR" : t.titular()).param("f", ahora).query(Long.class).single();
+                .param("tit", t.titular() == null ? "TITULAR" : t.titular()).param("f", ahora).param("m", t.marca()).query(Long.class).single();
     }
 
     @Override
@@ -256,7 +257,7 @@ class PersistenciaPagosJdbc implements Repositorio {
                 rs.getLong("saldo_total_cts"), rs.getLong("pago_minimo_cts"));
         return new TarjetaGuardada(rs.getLong("id_tarjeta"), rs.getLong("id_usuario"), rs.getLong("id_institucion"), rs.getString("ref_tarjeta_emisor"),
                 rs.getString("ultimos_4"), rs.getString("titular_confirmado"), rs.getBoolean("es_propia"), rs.getString("alias_usuario"),
-                rs.getString("estatus"), idEc, ec);
+                rs.getString("estatus"), idEc, ec, rs.getString("marca"));
     }
 
     private PagoTdc mapPago(ResultSet rs, int i) throws SQLException {

@@ -44,6 +44,12 @@ void main() {
         j('{"totalBsCts": 152030044, "totalUsdCts": 304512, "actualizadoEn": "2026-11-04T10:00:00-04:00"}'));
     expect(sr.totalBsCts, 152030044);
     expect(sr.totalUsdCts, 304512);
+    expect(sr.bancos, isEmpty, reason: 'bancos es opcional (servidores anteriores)');
+    final conBancos = AuthDto.saldoRapido(j('''{"totalBsCts": 100, "totalUsdCts": 2, "actualizadoEn": null,
+        "bancos": [{"nombre": "Banco Ávila", "tipo": "banco", "totalBsCts": 60, "totalUsdCts": 1},
+                   {"nombre": "CriptoAndes Exchange", "tipo": "plataforma_cripto", "totalBsCts": 40, "totalUsdCts": 1}]}'''));
+    expect(conBancos.bancos.map((b) => b.nombre), ['Banco Ávila', 'CriptoAndes Exchange']);
+    expect(conBancos.bancos.last.esCripto, isTrue);
   });
 
   test('§1.1 registro serializa al contrato', () {
@@ -171,6 +177,8 @@ void main() {
         "estadoCuenta": {"fechaCorte": "2026-10-28", "fechaLimitePago": "2026-11-13",
                          "saldoTotalCts": 8754320, "pagoMinimoCts": 1312000}}'''));
     expect(t.estadoCuenta!.pagoMinimoCts, 1312000);
+    expect(t.marca, isNull, reason: 'sin marca el emisor no la informó');
+    expect(PagosDto.tarjeta(j('{"idTarjeta": 5, "ultimos4": "3310", "marca": "VISA"}')).marca, 'visa');
     final c = PagosDto.cotizacion(j('{"montoCts":1500000,"comisionCts":3000,"totalCts":1503000}'));
     expect(c.totalCts, 1503000);
     final p = PagosDto.pago(j('''{"idPago": 21, "estado": "CAPTURADO", "montoCts": 1500000, "comisionCts": 3000,

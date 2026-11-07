@@ -9,6 +9,8 @@ import 'helpers.dart';
 
 Future<void> _login(WidgetTester tester) async {
   await tester.enterText(find.byKey(const ValueKey('login-cedula')), '${FakeApi.cedulaDemo}');
+  await tester.tap(find.byKey(const ValueKey('login-continuar')));
+  await tester.pumpAndSettle();
   for (final d in FakeApi.pinDemo.split('')) {
     await tester.tap(find.byKey(ValueKey('pin-$d')));
   }
@@ -177,6 +179,8 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byKey(const ValueKey('login-cedula')), '20111222');
+    await tester.tap(find.byKey(const ValueKey('login-continuar')));
+    await tester.pumpAndSettle();
     for (final d in '2580'.split('')) {
       await tester.tap(find.byKey(ValueKey('pin-$d')));
     }

@@ -22,6 +22,7 @@ class PagosDto {
         titularConfirmado: j.textoONulo('titularConfirmado'),
         esPropia: j.booleano('esPropia', true),
         estadoCuenta: estadoCuenta(j.mapa('estadoCuenta')),
+        marca: j.textoONulo('marca')?.toLowerCase(),
       );
 
   static Beneficiario beneficiario(Map<String, dynamic> j) =>

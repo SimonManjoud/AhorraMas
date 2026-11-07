@@ -55,7 +55,7 @@ public class SistemasExternosFalsos {
     PuertosPagos.EmisorTarjetas emisorFalso() {
         return (codigo, token) -> codigo.equals("0902")
                 ? List.of(new TarjetaExterna("TDC-0902-" + token.substring(token.length() - 6), "7781", "MARIA PEREZ",
-                new EstadoCuentaExterno(LocalDate.now(VET).minusDays(7), LocalDate.now(VET).plusDays(8), 18_450_000, 1_845_000)))
+                new EstadoCuentaExterno(LocalDate.now(VET).minusDays(7), LocalDate.now(VET).plusDays(8), 18_450_000, 1_845_000), "visa"))
                 : List.of();
     }
 

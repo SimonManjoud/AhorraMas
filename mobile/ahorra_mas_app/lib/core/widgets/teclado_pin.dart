@@ -44,7 +44,7 @@ class TecladoPin extends StatelessWidget {
     Widget tecla(String d) => _Tecla(
           key: ValueKey('pin-$d'),
           onTap: habilitado ? () => alDigito(d) : null,
-          child: Text(d, style: Theme.of(context).textTheme.headlineSmall),
+          child: Text(d, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600)),
         );
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -58,12 +58,12 @@ class TecladoPin extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            const SizedBox(width: 72, height: 60),
+            const SizedBox(width: 72, height: 64),
             tecla('0'),
             _Tecla(
               key: const ValueKey('pin-borrar'),
               onTap: habilitado ? alBorrar : null,
-              child: const Icon(Icons.backspace_outlined),
+              child: const Icon(Icons.backspace_outlined, size: 22),
             ),
           ],
         ),
@@ -80,13 +80,20 @@ class _Tecla extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return SizedBox(
       width: 72,
-      height: 60,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(36),
-        onTap: onTap,
-        child: Center(child: child),
+      height: 64,
+      child: Center(
+        child: Material(
+          color: cs.surface,
+          shape: const CircleBorder(),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            child: SizedBox(width: 58, height: 58, child: Center(child: child)),
+          ),
+        ),
       ),
     );
   }

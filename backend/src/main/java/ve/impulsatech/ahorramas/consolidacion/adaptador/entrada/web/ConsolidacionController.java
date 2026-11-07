@@ -67,7 +67,10 @@ class ConsolidacionController {
                          String moneda, String descripcion) {
     }
 
-    record SaldoRapidoDto(long totalBsCts, long totalUsdCts, OffsetDateTime actualizadoEn) {
+    record BancoSaldoDto(String nombre, String tipo, long totalBsCts, long totalUsdCts) {
+    }
+
+    record SaldoRapidoDto(long totalBsCts, long totalUsdCts, OffsetDateTime actualizadoEn, List<BancoSaldoDto> bancos) {
     }
 
     @GetMapping("/instituciones")
@@ -151,13 +154,18 @@ class ConsolidacionController {
         return tasa(tasas.tasaHoy());
     }
 
-    /** F3: total enmascarable sin detalle por banco; token de solo lectura ligado al dispositivo. */
+    /**
+     * F3: total enmascarable y su desglose por institución (sin cuentas ni movimientos). El token es de solo lectura
+     * y está ligado al dispositivo de confianza: solo ese equipo ve los montos antes de ingresar el PIN.
+     */
     @GetMapping("/saldo-rapido")
     SaldoRapidoDto saldoRapido(@RequestHeader(value = "X-Dispositivo", required = false) String huella) {
         long id = UsuarioActual.id();
         usuarios.validarHuellaDispositivo(id, UsuarioActual.idDispositivo(), huella);
         var t = cuentas.totales(id);
-        return new SaldoRapidoDto(t.totalBsCts(), t.totalUsdCts(), t.actualizadoEn());
+        var bancos = consolidado.posicion(id).instituciones().stream()
+                .map(i -> new BancoSaldoDto(i.nombre(), i.tipo(), i.totalBsCts(), i.totalUsdCts())).toList();
+        return new SaldoRapidoDto(t.totalBsCts(), t.totalUsdCts(), t.actualizadoEn(), bancos);
     }
 
     private static TasaDto tasa(TasaBcv t) {

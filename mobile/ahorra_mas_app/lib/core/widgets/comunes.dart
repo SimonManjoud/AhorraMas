@@ -76,11 +76,9 @@ class AvisoSimulacion extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
-        color: cs.surfaceContainerHighest.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: cs.outlineVariant),
+        border: Border(top: BorderSide(color: cs.outlineVariant), bottom: BorderSide(color: cs.outlineVariant)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,7 +88,10 @@ class AvisoSimulacion extends StatelessWidget {
           Expanded(
             child: Text(
               texto.toLowerCase().contains('no asesor') ? texto : '$textoBase $texto',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(color: cs.onSurfaceVariant, fontStyle: FontStyle.italic),
             ),
           ),
         ],
@@ -110,7 +111,7 @@ class AvisoSinClaves extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Row(
       children: [
-        Icon(Icons.lock_outline, size: compacto ? 14 : 18, color: cs.primary),
+        Icon(Icons.lock_outline, size: compacto ? 14 : 18, color: cs.onSurfaceVariant),
         const SizedBox(width: 6),
         Expanded(
           child: Text(
@@ -133,7 +134,7 @@ class TituloSeccion extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 20, 4, 8),
+      padding: const EdgeInsets.fromLTRB(0, 20, 0, 8),
       child: Row(
         children: [
           Expanded(child: Text(texto, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700))),
@@ -156,10 +157,7 @@ class EtiquetaEstado extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(20),
-      ),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(20)),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -167,7 +165,7 @@ class EtiquetaEstado extends StatelessWidget {
           Flexible(
             child: Text(texto,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 12)),
+                style: TextStyle(fontFamily: AppTheme.familia, color: color, fontWeight: FontWeight.w700, fontSize: 12)),
           ),
         ],
       ),

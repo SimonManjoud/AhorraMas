@@ -180,9 +180,36 @@ class SaldoRapido {
     required this.totalBsCts,
     required this.totalUsdCts,
     required this.actualizadoEn,
+    this.bancos = const [],
   });
 
   final int totalBsCts;
   final int totalUsdCts;
   final DateTime? actualizadoEn;
+
+  /// Desglose por institución (sin cuentas ni movimientos).
+  final List<SaldoBanco> bancos;
+}
+
+/// Total de una institución en el saldo rápido.
+class SaldoBanco {
+  const SaldoBanco({required this.nombre, required this.tipo, required this.totalBsCts, required this.totalUsdCts});
+
+  final String nombre;
+
+  /// `banco|plataforma_cripto`
+  final String tipo;
+  final int totalBsCts;
+  final int totalUsdCts;
+
+  bool get esCripto => tipo == 'plataforma_cripto';
+
+  Map<String, Object> aJson() => {'nombre': nombre, 'tipo': tipo, 'totalBsCts': totalBsCts, 'totalUsdCts': totalUsdCts};
+
+  static SaldoBanco desdeJson(Map<String, dynamic> j) => SaldoBanco(
+        nombre: j['nombre'] as String? ?? '',
+        tipo: j['tipo'] as String? ?? 'banco',
+        totalBsCts: (j['totalBsCts'] as num?)?.toInt() ?? 0,
+        totalUsdCts: (j['totalUsdCts'] as num?)?.toInt() ?? 0,
+      );
 }
