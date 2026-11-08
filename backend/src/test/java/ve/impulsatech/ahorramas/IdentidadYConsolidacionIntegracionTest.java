@@ -19,13 +19,23 @@ class IdentidadYConsolidacionIntegracionTest extends PruebaIntegracion {
         UsuarioPrueba u = registrar();
         var dup = cliente().post("/api/v1/auth/registro", Map.of("nacionalidadDoc", "V", "cedula", u.cedula(), "primerNombre", "Otra",
                 "primerApellido", "Persona", "fechaNacimiento", "1990-01-01", "correo", "otra" + u.cedula() + "@x.com", "telefonoMovil", "04120000001",
-                "pin", "1234", "dispositivo", Map.of("huella", "z")));
+                "pin", "123456", "dispositivo", Map.of("huella", "z")));
         assertThat(dup.status()).isEqualTo(409);
         String correoCifrado = jdbc.sql("SELECT correo_cifrado FROM identidad.usuario WHERE id_usuario = :u").param("u", u.idUsuario())
                 .query(String.class).single();
         assertThat(correoCifrado).doesNotContain("@");   // R-06
         String pin = jdbc.sql("SELECT pin_hash FROM identidad.credencial WHERE id_usuario = :u").param("u", u.idUsuario()).query(String.class).single();
-        assertThat(pin).startsWith("$2").doesNotContain("1234");
+        assertThat(pin).startsWith("$2").doesNotContain("123456");
+    }
+
+    @Test
+    void elRegistroExigeUnPinDeSeisDigitos() {
+        for (String pin : List.of("1234", "12345", "1234567", "12345a")) {
+            var r = cliente().post("/api/v1/auth/registro", Map.of("nacionalidadDoc", "V", "cedula", 29000000 + pin.length(),
+                    "primerNombre", "Ana", "primerApellido", "Ruiz", "fechaNacimiento", "1990-01-01", "correo", "pin" + pin + "@x.com",
+                    "telefonoMovil", "04120000002", "pin", pin, "dispositivo", Map.of("huella", "p" + pin)));
+            assertThat(r.status()).as("PIN %s", pin).isEqualTo(400);
+        }
     }
 
     @Test
@@ -48,7 +58,7 @@ class IdentidadYConsolidacionIntegracionTest extends PruebaIntegracion {
         var r3 = cliente().post("/api/v1/auth/login", malo);
         assertThat(r3.texto("codigo")).isEqualTo("DISPOSITIVO_REVOCADO");
         assertThat(u.api().get("/api/v1/me").status()).isEqualTo(401);   // la sesión previa quedó anulada
-        var ok = cliente().post("/api/v1/auth/login", Map.of("nacionalidadDoc", "V", "cedula", u.cedula(), "pin", "1234",
+        var ok = cliente().post("/api/v1/auth/login", Map.of("nacionalidadDoc", "V", "cedula", u.cedula(), "pin", "123456",
                 "huellaDispositivo", u.huella()));
         assertThat(ok.status()).isEqualTo(200);
     }

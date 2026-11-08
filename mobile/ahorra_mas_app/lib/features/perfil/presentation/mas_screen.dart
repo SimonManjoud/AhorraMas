@@ -46,7 +46,7 @@ class MasScreen extends ConsumerWidget {
                 const AvisoSinClaves(compacto: true),
                 const SizedBox(height: 8),
                 Text(
-                  'Ahorra+ · Impulsa Tech, C.A. · MVP académico\n'
+                  'Ahorra+ - Impulsa Tech, C.A. - MVP académico\n'
                   '${config.fakeApi ? 'Modo demo (API falsa en memoria)' : 'API: ${config.apiBaseUrl}'}',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodySmall,

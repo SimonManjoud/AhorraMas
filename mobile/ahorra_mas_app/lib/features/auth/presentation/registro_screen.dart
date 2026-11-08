@@ -260,10 +260,10 @@ class _RegistroScreenState extends ConsumerState<RegistroScreen> {
                     obscureText: true,
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(6)],
-                    decoration: const InputDecoration(labelText: 'PIN (4 a 6 dígitos)'),
+                    decoration: const InputDecoration(labelText: 'PIN (6 dígitos)'),
                     validator: (v) {
                       final p = v ?? '';
-                      if (p.length < 4) return 'Entre 4 y 6 dígitos';
+                      if (p.length != 6) return 'El PIN debe tener exactamente 6 dígitos';
                       if (RegExp(r'^(\d)\1+$').hasMatch(p)) return 'Evita repetir el mismo dígito';
                       return null;
                     },

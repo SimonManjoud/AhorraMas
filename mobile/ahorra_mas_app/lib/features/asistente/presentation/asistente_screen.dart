@@ -11,6 +11,7 @@ import '../../cofre/domain/cofre_models.dart';
 import '../../cofre/presentation/cofre_providers.dart';
 import '../../cofre/presentation/meta_detalle_screen.dart' show describirRegla;
 import '../domain/asistente.dart';
+import '../../../core/widgets/texto_enfasis.dart';
 
 final historialRecomendacionesProvider = FutureProvider.autoDispose<List<Recomendacion>>(
     (ref) => ref.watch(asistenteRepositoryProvider).historialRecomendaciones());
@@ -252,14 +253,14 @@ class _Recomendacion extends StatelessWidget {
                   children: [
                     Container(width: 12, height: 12, decoration: BoxDecoration(color: paleta[i % paleta.length], shape: BoxShape.circle)),
                     const SizedBox(width: 8),
-                    Expanded(child: Text('${r.distribucion[i].instrumento} · riesgo ${r.distribucion[i].nivelRiesgo}')),
+                    Expanded(child: Text('${r.distribucion[i].instrumento} - riesgo ${r.distribucion[i].nivelRiesgo}')),
                     Text(Dinero.porcentajePb(r.distribucion[i].porcentajePb),
                         style: const TextStyle(fontWeight: FontWeight.w700)),
                   ],
                 ),
               ),
             const SizedBox(height: 12),
-            Text(r.explicacion),
+            TextoEnfasis(r.explicacion),
             if (r.reglaSugerida case final s?) ...[
               const SizedBox(height: 12),
               Text('Regla sugerida', style: t.titleSmall),
@@ -318,8 +319,8 @@ class _Historial extends ConsumerWidget {
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     leading: const Icon(Icons.history),
-                    title: Text('Perfil ${r.perfilResultante ?? '—'} · ${r.estatus}'),
-                    subtitle: Text('${Fechas.conHora(r.fecha)}${r.versionModelo == null ? '' : ' · ${r.versionModelo}'}'),
+                    title: Text('Perfil ${r.perfilResultante ?? '—'} - ${r.estatus}'),
+                    subtitle: Text('${Fechas.conHora(r.fecha)}${r.versionModelo == null ? '' : ' - ${r.versionModelo}'}'),
                   ),
               ],
             ),

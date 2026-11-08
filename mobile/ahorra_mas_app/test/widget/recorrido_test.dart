@@ -172,7 +172,7 @@ void main() {
       fechaNacimiento: DateTime(1999, 5, 2),
       correo: 'ana@correo.com',
       telefonoMovil: '04241234567',
-      pin: '2580',
+      pin: '258014',
       dispositivo: const DispositivoInfo(huella: 'h', plataforma: 'Android', modelo: 'X'),
     ));
     await tester.pumpWidget(appDePrueba(fake: fake));
@@ -181,7 +181,7 @@ void main() {
     await tester.enterText(find.byKey(const ValueKey('login-cedula')), '20111222');
     await tester.tap(find.byKey(const ValueKey('login-continuar')));
     await tester.pumpAndSettle();
-    for (final d in '2580'.split('')) {
+    for (final d in '258014'.split('')) {
       await tester.tap(find.byKey(ValueKey('pin-$d')));
     }
     await tester.ensureVisible(find.byKey(const ValueKey('login-entrar')));

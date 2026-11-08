@@ -91,7 +91,7 @@ def main():
     s, reg, _ = llamar("POST", API + "/auth/registro", {
         "nacionalidadDoc": "V", "cedula": cedula, "primerNombre": "María", "primerApellido": "Pérez",
         "fechaNacimiento": "1995-04-12", "correo": f"maria{cedula}@correo.com",
-        "telefonoMovil": "0414" + str(random.randint(1_000_000, 9_999_999)), "pin": "1234",
+        "telefonoMovil": "0414" + str(random.randint(1_000_000, 9_999_999)), "pin": "123456",
         "dispositivo": {"huella": huella, "plataforma": "Android", "modelo": "Pixel 8"}})
     paso("registro", s == 201, reg if s != 201 else f"usuario {reg['usuario']['idUsuario']}")
     tk = reg["accessToken"]
@@ -103,7 +103,7 @@ def main():
     paso("PIN incorrecto rechazado con código propio", s == 401 and log["codigo"] == "PIN_INVALIDO", log.get("codigo"))
 
     def step_up(con_otp):
-        cuerpo = {"pin": "1234"}
+        cuerpo = {"pin": "123456"}
         if con_otp:
             _, otp, _ = llamar("POST", API + "/auth/otp", {"proposito": "pago"}, tk)
             cuerpo.update({"idDesafio": otp["idDesafio"], "otp": otp["otpDemo"]})

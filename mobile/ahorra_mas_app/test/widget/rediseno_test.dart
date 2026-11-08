@@ -145,7 +145,7 @@ void main() {
         findsOneWidget);
     expect(find.descendant(of: find.byKey(const ValueKey('detalle-porcion')), matching: find.text('Cuenta corriente')),
         findsOneWidget);
-    expect(find.text('${cuenta.moneda} · ${cuenta.ultimos4}'), findsOneWidget);
+    expect(find.text('${cuenta.moneda} - ${cuenta.ultimos4}'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Cerrar detalle'));
     await tester.pumpAndSettle();

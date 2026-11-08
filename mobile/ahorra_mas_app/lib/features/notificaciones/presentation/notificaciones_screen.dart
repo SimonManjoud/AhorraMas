@@ -5,6 +5,7 @@ import '../../../core/di/providers.dart';
 import '../../../core/util/fechas.dart';
 import '../../../core/widgets/comunes.dart';
 import '../domain/notificaciones.dart';
+import '../../../core/widgets/texto_enfasis.dart';
 
 final notificacionesProvider = FutureProvider.autoDispose<List<Notificacion>>(
     (ref) => ref.watch(notificacionesRepositoryProvider).notificaciones());
@@ -41,8 +42,8 @@ class NotificacionesScreen extends ConsumerWidget {
                     return ListTile(
                       tileColor: n.leida ? null : cs.primaryContainer.withValues(alpha: 0.35),
                       leading: Icon(_icono(n.tipo), color: n.leida ? cs.outline : cs.primary),
-                      title: Text(n.titulo, style: TextStyle(fontWeight: n.leida ? FontWeight.w500 : FontWeight.w700)),
-                      subtitle: Text('${n.mensaje}\n${Fechas.conHora(n.fechaHoraEnvio)}${n.canal == null ? '' : ' · ${n.canal}'}'),
+                      title: TextoEnfasis(n.titulo, style: TextStyle(fontWeight: n.leida ? FontWeight.w500 : FontWeight.w700)),
+                      subtitle: TextoEnfasis('${n.mensaje}\n${Fechas.conHora(n.fechaHoraEnvio)}${n.canal == null ? '' : ' - ${n.canal}'}'),
                       isThreeLine: true,
                       onTap: n.leida
                           ? null

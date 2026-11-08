@@ -212,7 +212,7 @@ class _PagoTdcFlowScreenState extends ConsumerState<PagoTdcFlowScreen> {
                       for (final c in lista)
                         DropdownMenuItem(
                           value: c.idCuenta,
-                          child: Text('${c.nombreVisible} · ${Dinero.bs(c.saldoCts)}', overflow: TextOverflow.ellipsis),
+                          child: Text('${c.nombreVisible} - ${Dinero.bs(c.saldoCts)}', overflow: TextOverflow.ellipsis),
                         ),
                     ],
                     onChanged: (id) => setState(() {
@@ -293,7 +293,7 @@ class _PagoTdcFlowScreenState extends ConsumerState<PagoTdcFlowScreen> {
           child: ListTile(
             leading: const Icon(Icons.person_outline),
             title: Text(b.titular, style: const TextStyle(fontWeight: FontWeight.w700)),
-            subtitle: Text('Tarjeta terminada en ${b.ultimos4} · ${_tarjeta!.banco}'),
+            subtitle: Text('Tarjeta terminada en ${b.ultimos4} - ${_tarjeta!.banco}'),
           ),
         ),
         CheckboxListTile(
@@ -351,7 +351,7 @@ class _PagoTdcFlowScreenState extends ConsumerState<PagoTdcFlowScreen> {
         if (intento != null) ...[
           const SizedBox(height: 6),
           Text(
-            'Intento ${intento.idempotencyKey.substring(0, 8)}… · envíos: ${intento.envios}',
+            'Intento ${intento.idempotencyKey.substring(0, 8)}… - envíos: ${intento.envios}',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.labelSmall,
           ),
@@ -380,7 +380,7 @@ class _PasoTarjeta extends ConsumerWidget {
               title: Text('${t.banco} •••• ${t.ultimos4}'),
               subtitle: t.estadoCuenta == null
                   ? null
-                  : Text('Mínimo ${Dinero.bs(t.estadoCuenta!.pagoMinimoCts)} · total ${Dinero.bs(t.estadoCuenta!.saldoTotalCts)}'),
+                  : Text('Mínimo ${Dinero.bs(t.estadoCuenta!.pagoMinimoCts)} - total ${Dinero.bs(t.estadoCuenta!.saldoTotalCts)}'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => alElegir(t),
             ),

@@ -51,6 +51,7 @@ class PersistenciaPagosJdbc implements Repositorio {
                     fecha_registro, estatus, marca)
                 VALUES (:u, :i, :ref, :u4, :tit, TRUE, :f, 'activa', :m)
                 ON CONFLICT (id_usuario, id_institucion, ref_tarjeta_emisor) DO UPDATE SET ultimos_4 = EXCLUDED.ultimos_4, estatus = 'activa',
+                    titular_confirmado = EXCLUDED.titular_confirmado,
                     marca = COALESCE(EXCLUDED.marca, pagos.tarjeta_credito.marca)
                 RETURNING id_tarjeta
                 """).param("u", idUsuario).param("i", idInstitucion).param("ref", t.refTarjeta()).param("u4", t.ultimos4())

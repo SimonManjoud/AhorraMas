@@ -50,7 +50,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final r = await ref.read(recuerdoEquipoServiceProvider).leer();
     if (!mounted) return;
     setState(() {
-      if (c != null && _cedula.text.isEmpty) _cedula.text = c;
+      if (c != null && _cedula.text.isEmpty) _cedula.text = _CedulaConPuntos.agrupar(c);
       if (n != null) _nacionalidad = n;
       _recuerdo = r;
     });
@@ -63,7 +63,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   int? get _cedulaValida {
-    final c = int.tryParse(_cedula.text.trim());
+    final c = int.tryParse(_cedula.text.replaceAll(RegExp(r'\D'), ''));
     return c == null || c <= 0 ? null : c;
   }
 
@@ -163,6 +163,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       },
       child: Scaffold(
         body: SafeArea(
+          // La portada del paso de cédula pinta su propio fondo bajo la barra de estado.
+          top: _paso == 1,
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 440),
@@ -186,103 +188,137 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  Widget _marca(BuildContext context) {
-    final config = ref.watch(appConfigProvider);
-    final c = AhorraColores.of(context);
-    return Row(
-      children: [
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(color: c.tapa, borderRadius: BorderRadius.circular(14)),
-          child: Icon(Icons.savings_rounded, color: c.sobreTapa),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text('Ahorra+',
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
-        ),
-        if (config.fakeApi)
-          Flexible(
-            child: EtiquetaEstado(
-              texto: 'Modo demo',
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              icono: Icons.science_outlined,
-            ),
-          ),
-      ],
-    );
-  }
-
+  /// Paso 1: portada vino a sangre (marca, saludo y lo que ofrece la app) y, montada sobre
+  /// ella, la lámina con el campo de cédula. El pie (registro, regla de oro) queda abajo.
   Widget _pasoCedula(BuildContext context) {
     final t = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
+    final c = AhorraColores.of(context);
     final config = ref.watch(appConfigProvider);
     final expirada = ref.read(sessionProvider.notifier).expiradaPorServidor;
-    return ListView(
+    final nombre = _recuerdo?.primerNombre ?? '';
+    return AnnotatedRegion<SystemUiOverlayStyle>(
       key: const ValueKey('paso-cedula'),
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-      children: [
-        _marca(context),
-        const SizedBox(height: 40),
-        if (expirada)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Text('Tu sesión expiró. Vuelve a ingresar.', style: TextStyle(color: cs.error)),
-          ),
-        Text('Hola de nuevo', style: t.headlineLarge),
-        const SizedBox(height: 6),
-        Text('Escribe tu cédula para empezar.', style: t.bodyLarge?.copyWith(color: cs.onSurfaceVariant)),
-        const SizedBox(height: 24),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SegmentedButton<String>(
-              segments: const [
-                ButtonSegment(value: 'V', label: Text('V')),
-                ButtonSegment(value: 'E', label: Text('E')),
-              ],
-              selected: {_nacionalidad},
-              showSelectedIcon: false,
-              onSelectionChanged: (s) => setState(() => _nacionalidad = s.first),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TextField(
-                key: const ValueKey('login-cedula'),
-                controller: _cedula,
-                keyboardType: TextInputType.number,
-                textInputAction: TextInputAction.next,
-                onSubmitted: (_) => _continuar(),
-                onChanged: (_) {
-                  if (_error != null) setState(() => _error = null);
-                },
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(9)],
-                decoration: InputDecoration(labelText: 'Cédula', errorText: _error),
+      value: SystemUiOverlayStyle.light.copyWith(statusBarColor: Colors.transparent),
+      child: LayoutBuilder(
+        builder: (context, limites) => SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: limites.maxHeight),
+            child: IntrinsicHeight(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _PortadaLogin(
+                    saludo: nombre.isEmpty ? 'Hola de nuevo' : 'Hola de nuevo, $nombre',
+                    demo: config.fakeApi,
+                  ),
+                  Transform.translate(
+                    offset: const Offset(0, -36),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Material(
+                        type: MaterialType.transparency,
+                        child: Container(
+                          padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
+                          decoration: BoxDecoration(
+                            color: c.superficie,
+                            borderRadius: BorderRadius.circular(28),
+                            border: Border.all(color: c.reglaSuave),
+                            boxShadow: [
+                              BoxShadow(
+                                color: c.tapaHonda.withValues(alpha: 0.10),
+                                blurRadius: 28,
+                                offset: const Offset(0, 12),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              if (expirada)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 14),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.schedule_rounded, size: 18, color: cs.error),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text('Tu sesión expiró. Vuelve a ingresar.',
+                                            style: t.bodyMedium?.copyWith(color: cs.error)),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              Text('Ingresa con tu cédula', style: t.titleMedium?.copyWith(fontWeight: FontWeight.w800)),
+                              const SizedBox(height: 4),
+                              Text('Luego te pediremos tu PIN de Ahorra+.',
+                                  style: t.bodyMedium?.copyWith(color: c.tintaGris)),
+                              const SizedBox(height: 18),
+                              _CampoCedula(
+                                controlador: _cedula,
+                                nacionalidad: _nacionalidad,
+                                error: _error,
+                                alCambiarNacionalidad: (n) => setState(() => _nacionalidad = n),
+                                alEscribir: () {
+                                  if (_error != null) setState(() => _error = null);
+                                },
+                                alEnviar: _continuar,
+                              ),
+                              const SizedBox(height: 18),
+                              FilledButton(
+                                key: const ValueKey('login-continuar'),
+                                onPressed: _continuar,
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text('Continuar'),
+                                    SizedBox(width: 8),
+                                    Icon(Icons.arrow_forward_rounded, size: 20),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const Spacer(),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Center(
+                          child: TextButton(
+                            onPressed: () => context.push('/registro'),
+                            child: Text.rich(
+                              TextSpan(children: [
+                                TextSpan(
+                                  text: '¿No tienes cuenta? ',
+                                  style: TextStyle(color: c.tintaGris, fontWeight: FontWeight.w500),
+                                ),
+                                const TextSpan(text: 'Regístrate'),
+                              ]),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        const AvisoSinClaves(compacto: true),
+                        if (config.fakeApi) ...[
+                          const SizedBox(height: 10),
+                          Text('Demo: V-12.345.678 - PIN 1234',
+                              textAlign: TextAlign.center, style: t.bodySmall?.copyWith(color: cs.outline)),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
-        const SizedBox(height: 20),
-        FilledButton(
-          key: const ValueKey('login-continuar'),
-          onPressed: _continuar,
-          child: const Text('Continuar'),
-        ),
-        const SizedBox(height: 8),
-        TextButton(
-          onPressed: () => context.push('/registro'),
-          child: const Text('¿No tienes cuenta? Regístrate'),
-        ),
-        const SizedBox(height: 28),
-        const AvisoSinClaves(compacto: true),
-        if (config.fakeApi) ...[
-          const SizedBox(height: 10),
-          Text('Demo: V-12345678 · PIN 1234',
-              textAlign: TextAlign.center, style: t.bodySmall?.copyWith(color: cs.outline)),
-        ],
-      ],
+      ),
     );
   }
 
@@ -307,7 +343,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             Chip(
               backgroundColor: AhorraColores.of(context).superficie,
               avatar: const Icon(Icons.badge_outlined, size: 18),
-              label: Text('$_nacionalidad-${_cedula.text.trim()}'),
+              label: Text('$_nacionalidad-${_CedulaConPuntos.agrupar(_cedula.text)}'),
             ),
           ],
         ),
@@ -348,6 +384,269 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ),
       ],
     );
+  }
+}
+
+/// Portada del ingreso: tapa vino a sangre, con la marca, el saludo y tres cosas que la app
+/// hace por ti. Un degradado vino suave le da profundidad.
+class _PortadaLogin extends StatelessWidget {
+  const _PortadaLogin({required this.saludo, required this.demo});
+
+  final String saludo;
+  final bool demo;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = AhorraColores.of(context);
+    final t = Theme.of(context).textTheme;
+    final arriba = MediaQuery.paddingOf(context).top;
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          // Degradado del mismo vino de la marca: un tono más cálido arriba que se
+          // hunde hacia uno más profundo abajo, para que combine con el resto de la tapa.
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color.lerp(c.tapa, const Color(0xFFB0405C), 0.45)!,
+              c.tapa,
+              Color.lerp(c.tapa, Colors.black, 0.35)!,
+            ],
+            stops: const [0.0, 0.5, 1.0],
+          ),
+        ),
+        child: Stack(
+          children: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(24, arriba + 18, 24, 64),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(color: c.sobreTapa, borderRadius: BorderRadius.circular(14)),
+                        child: Icon(Icons.savings_rounded, color: c.tapa, size: 24),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text('Ahorra+',
+                            overflow: TextOverflow.ellipsis,
+                            style: t.titleLarge?.copyWith(fontWeight: FontWeight.w800, color: c.sobreTapa)),
+                      ),
+                      if (demo)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.science_outlined, size: 14, color: c.sobreTapa),
+                              const SizedBox(width: 6),
+                              Text('Modo demo', style: t.labelMedium?.copyWith(color: c.sobreTapa)),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 40),
+                  Text(saludo, style: t.headlineLarge?.copyWith(color: c.sobreTapa)),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Todo tu dinero en Bs y USD, a tasa BCV, en una sola libreta.',
+                    style: t.bodyLarge?.copyWith(color: c.sobreTapaTenue, height: 1.35),
+                  ),
+                  const SizedBox(height: 20),
+                  const Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _Beneficio(icono: Icons.currency_exchange_rounded, texto: 'Tasa BCV del día'),
+                      _Beneficio(icono: Icons.shield_outlined, texto: 'Cofre Protector'),
+                      _Beneficio(icono: Icons.visibility_outlined, texto: 'Solo lectura'),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Beneficio extends StatelessWidget {
+  const _Beneficio({required this.icono, required this.texto});
+
+  final IconData icono;
+  final String texto;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = AhorraColores.of(context);
+    return Container(
+      padding: const EdgeInsets.fromLTRB(10, 6, 12, 6),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: c.sobreTapa.withValues(alpha: 0.22)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icono, size: 15, color: c.sobreTapa),
+          const SizedBox(width: 6),
+          Text(texto,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(color: c.sobreTapa, fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Un solo campo para la cédula: el selector V/E vive dentro, a la izquierda, y el número
+/// se escribe en cifras grandes con puntos de miles (12.345.678).
+class _CampoCedula extends StatelessWidget {
+  const _CampoCedula({
+    required this.controlador,
+    required this.nacionalidad,
+    required this.error,
+    required this.alCambiarNacionalidad,
+    required this.alEscribir,
+    required this.alEnviar,
+  });
+
+  final TextEditingController controlador;
+  final String nacionalidad;
+  final String? error;
+  final ValueChanged<String> alCambiarNacionalidad;
+  final VoidCallback alEscribir;
+  final VoidCallback alEnviar;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = AhorraColores.of(context);
+    final cs = Theme.of(context).colorScheme;
+    final t = Theme.of(context).textTheme;
+    final hayError = error != null;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          height: 64,
+          padding: const EdgeInsets.fromLTRB(6, 6, 16, 6),
+          decoration: BoxDecoration(
+            color: c.hoja,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: hayError ? cs.error : c.reglaSuave, width: hayError ? 1.6 : 1),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(color: c.hojaHonda, borderRadius: BorderRadius.circular(14)),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (final n in const ['V', 'E'])
+                      Semantics(
+                        button: true,
+                        selected: n == nacionalidad,
+                        label: n == 'V' ? 'Venezolano' : 'Extranjero',
+                        child: GestureDetector(
+                          onTap: () => alCambiarNacionalidad(n),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 180),
+                            width: 40,
+                            height: 46,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: n == nacionalidad ? c.tapa : Colors.transparent,
+                              borderRadius: BorderRadius.circular(11),
+                            ),
+                            child: Text(
+                              n,
+                              style: t.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                color: n == nacionalidad ? c.sobreTapa : c.tintaGris,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: TextField(
+                  key: const ValueKey('login-cedula'),
+                  controller: controlador,
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.next,
+                  onSubmitted: (_) => alEnviar(),
+                  onChanged: (_) => alEscribir(),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(9),
+                    _CedulaConPuntos(),
+                  ],
+                  style: AppTheme.cifra(tamano: 22, peso: FontWeight.w700, color: c.tinta),
+                  cursorColor: c.tapa,
+                  decoration: InputDecoration(
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                    filled: false,
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    hintText: '12.345.678',
+                    hintStyle: t.bodyLarge?.copyWith(color: c.tintaGris.withValues(alpha: 0.7)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (hayError)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(6, 8, 6, 0),
+            child: Row(
+              children: [
+                Icon(Icons.error_outline_rounded, size: 16, color: cs.error),
+                const SizedBox(width: 6),
+                Expanded(child: Text(error!, style: t.bodySmall?.copyWith(color: cs.error))),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// Agrupa la cédula con puntos de miles mientras se escribe (12345678 → 12.345.678).
+class _CedulaConPuntos extends TextInputFormatter {
+  static String agrupar(String texto) {
+    final d = texto.replaceAll(RegExp(r'\D'), '');
+    final b = StringBuffer();
+    for (var i = 0; i < d.length; i++) {
+      if (i > 0 && (d.length - i) % 3 == 0) b.write('.');
+      b.write(d[i]);
+    }
+    return b.toString();
+  }
+
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue anterior, TextEditingValue nuevo) {
+    final texto = agrupar(nuevo.text);
+    return TextEditingValue(text: texto, selection: TextSelection.collapsed(offset: texto.length));
   }
 }
 
@@ -406,7 +705,7 @@ class _MisBancosState extends ConsumerState<_MisBancos> {
 
     final String resumen;
     if (widget.saldoActivo) {
-      resumen = 'Saldo rápido activo · toca para ver tus montos';
+      resumen = 'Saldo rápido activo - toca para ver tus montos';
     } else if (recordados.isEmpty) {
       resumen = 'Se verán tras tu primer ingreso';
     } else {
@@ -502,7 +801,7 @@ class _MisBancosState extends ConsumerState<_MisBancos> {
       filas.add(Padding(
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
         child: Text(
-          '${consulta.desdeCache ? 'Sin conexión · último conocido' : 'Actualizado'} ${Fechas.conHora(s.actualizadoEn)}',
+          '${consulta.desdeCache ? 'Sin conexión - último conocido' : 'Actualizado'} ${Fechas.conHora(s.actualizadoEn)}',
           style: nota,
         ),
       ));

@@ -63,8 +63,8 @@ public class ConsolaController {
         Tasa tasa = bcv.tasaHoy("USD");
         sb.append("<section><h2>Tasa BCV del día</h2><p class=\"tasa\">")
                 .append(bs(tasa.valorBsX10000())).append(" Bs/USD</p><p class=\"tenue\">")
-                .append(htmlEscape(tasa.fecha())).append(" · valorBsX10000 = ").append(tasa.valorBsX10000())
-                .append(bcv.hayTasaForzadaHoy() ? " · <strong>forzada por la consola</strong>" : " · generada")
+                .append(htmlEscape(tasa.fecha())).append("  -  valorBsX10000 = ").append(tasa.valorBsX10000())
+                .append(bcv.hayTasaForzadaHoy() ? "  -  <strong>forzada por la consola</strong>" : "  -  generada")
                 .append("</p></section>");
 
         List<Notificacion> notis = notificaciones.ultimas(null, 25);
@@ -126,7 +126,7 @@ public class ConsolaController {
     private static String opcionesInstitucion() {
         StringBuilder sb = new StringBuilder();
         for (Institucion i : Institucion.CATALOGO) {
-            sb.append("<option value=\"").append(i.codigo()).append("\">").append(i.codigo()).append(" · ")
+            sb.append("<option value=\"").append(i.codigo()).append("\">").append(i.codigo()).append("  -  ")
                     .append(htmlEscape(i.nombre())).append("</option>");
         }
         return sb.toString();
@@ -159,7 +159,7 @@ public class ConsolaController {
             <head>
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1">
-            <title>Consola de simuladores · Ahorra+</title>
+            <title>Consola de simuladores  -  Ahorra+</title>
             <style>
               body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
                      background:#f4f6f9; color:#1d2433; }
@@ -197,8 +197,8 @@ public class ConsolaController {
             </head>
             <body>
             <header>
-              <h1>Consola de simuladores · Ahorra+ (MVP)</h1>
-              <p>BCV · Open Banking · Suiche · KYC · IA · Notificaciones — todo es simulado, nada sale de esta máquina.
+              <h1>Consola de simuladores  -  Ahorra+ (MVP)</h1>
+              <p>BCV  -  Open Banking  -  Suiche  -  KYC  -  IA  -  Notificaciones — todo es simulado, nada sale de esta máquina.
                  Se actualiza cada 5 s.</p>
             </header>
             <main>

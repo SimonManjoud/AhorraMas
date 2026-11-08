@@ -108,7 +108,7 @@ class _HojaSeleccionState extends ConsumerState<_HojaSeleccion> {
                         title: Text(i.nombre),
                         subtitle: Text(vinculadas.contains(i.idInstitucion)
                             ? 'Ya vinculada'
-                            : (i.esCripto ? 'Plataforma cripto · solo lectura' : 'Banco')),
+                            : (i.esCripto ? 'Plataforma cripto - solo lectura' : 'Banco')),
                       ),
                   ],
                 ),

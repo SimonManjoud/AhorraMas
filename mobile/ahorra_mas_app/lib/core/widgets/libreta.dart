@@ -407,7 +407,7 @@ class PildoraTasa extends StatelessWidget {
                 TextSpan(children: [
                   TextSpan(text: '1 US\$ = ', style: TextStyle(color: tenue)),
                   TextSpan(text: 'Bs $tasa', style: AppTheme.cifra(tamano: 14, peso: FontWeight.w700, color: tinta)),
-                  TextSpan(text: '  ·  Tasa BCV $fecha', style: TextStyle(color: tenue)),
+                  TextSpan(text: '  -  Tasa BCV $fecha', style: TextStyle(color: tenue)),
                 ]),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -419,4 +419,31 @@ class PildoraTasa extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Anillos concéntricos muy tenues, como el canto de una moneda: textura de la tapa vino
+/// (portada del ingreso y posición global). Solo trazos finos, sin degradados.
+class AnillosTapa extends CustomPainter {
+  const AnillosTapa({required this.color, this.anillos = 5});
+
+  final Color color;
+  final int anillos;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final centro = size.center(Offset.zero);
+    final radioMax = size.shortestSide / 2;
+    for (var i = 0; i < anillos; i++) {
+      final radio = radioMax * (1 - i / (anillos + 1));
+      final pincel = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = i.isEven ? 1.2 : 0.8
+        ..color = color.withValues(alpha: 0.05 + 0.025 * i);
+      canvas.drawCircle(centro, radio, pincel);
+    }
+    canvas.drawCircle(centro, radioMax * 0.22, Paint()..color = color.withValues(alpha: 0.05));
+  }
+
+  @override
+  bool shouldRepaint(AnillosTapa old) => old.color != color || old.anillos != anillos;
 }

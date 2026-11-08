@@ -28,6 +28,8 @@ class OtrosDominiosTest {
         assertThat(u.correo()).isEqualTo("a@b.com");
         assertThat(u.telefonoMovil()).isEqualTo("04141234567");
         assertThatThrownBy(() -> Usuario.validarPin("12")).isInstanceOf(ErrorNegocio.class);
+        assertThatThrownBy(() -> Usuario.validarPin("1234")).hasMessageContaining("6 dígitos");
+        Usuario.validarPin("123456");
     }
 
     @Test

@@ -25,7 +25,7 @@ public record Usuario(
 
     private static final Pattern CORREO = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
     private static final Pattern TELEFONO = Pattern.compile("^04(12|14|16|24|26|22)\\d{7}$");
-    private static final Pattern PIN = Pattern.compile("^\\d{4,6}$");
+    private static final Pattern PIN = Pattern.compile("^\\d{6}$");
     public static final int EDAD_MINIMA = 18;
 
     /** Crea un usuario nuevo validando las invariantes del registro. */
@@ -56,9 +56,10 @@ public record Usuario(
                 limpiar(segundoApellido), fechaNacimiento, correoNorm, telNorm, idSeudonimo, ahora, "activo");
     }
 
+    /** PIN de registro: exactamente 6 dígitos. (Login y step-up no lo validan, para no bloquear PIN antiguos.) */
     public static void validarPin(String pin) {
         if (pin == null || !PIN.matcher(pin).matches()) {
-            throw ErrorNegocio.validacion("El PIN debe tener entre 4 y 6 dígitos");
+            throw ErrorNegocio.validacion("El PIN debe tener exactamente 6 dígitos");
         }
     }
 

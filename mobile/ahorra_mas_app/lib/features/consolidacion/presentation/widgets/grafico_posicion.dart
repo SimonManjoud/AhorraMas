@@ -372,7 +372,7 @@ class _Detalle extends StatelessWidget {
             for (final cu in p.cuentas)
               Padding(
                 padding: const EdgeInsets.only(left: 22, top: 2),
-                child: Text('${cu.nombreVisible} · ${padre?.nombreInstitucion(cu) ?? ''}',
+                child: Text('${cu.nombreVisible} - ${padre?.nombreInstitucion(cu) ?? ''}',
                     style: t.bodySmall?.copyWith(color: c.tintaGris)),
               )
           else ...[
@@ -382,9 +382,9 @@ class _Detalle extends StatelessWidget {
               runSpacing: 6,
               children: [
                 _Etiqueta(icono: cripto ? Icons.currency_bitcoin_rounded : Icons.account_balance_rounded, texto: inst!.nombre),
-                _Etiqueta(icono: cripto ? Icons.lock_outline_rounded : Icons.verified_outlined, texto: cripto ? 'Cripto · solo lectura' : 'Banco'),
+                _Etiqueta(icono: cripto ? Icons.lock_outline_rounded : Icons.verified_outlined, texto: cripto ? 'Cripto - solo lectura' : 'Banco'),
                 _Etiqueta(icono: Icons.wallet_rounded, texto: tipoCuentaLegible(cuenta.tipo)),
-                _Etiqueta(icono: Icons.payments_outlined, texto: '${cuenta.moneda} · ${cuenta.ultimos4}'),
+                _Etiqueta(icono: Icons.payments_outlined, texto: '${cuenta.moneda} - ${cuenta.ultimos4}'),
               ],
             ),
           ],
@@ -397,7 +397,7 @@ class _Detalle extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(Dinero.usd(p.usdCts), style: AppTheme.cifra(tamano: 20, peso: FontWeight.w800, color: c.tinta)),
-                    Text('${Dinero.bs(p.bsCts)} · ${_porcentaje(p.usdCts * 100 / total)} del total',
+                    Text('${Dinero.bs(p.bsCts)} - ${_porcentaje(p.usdCts * 100 / total)} del total',
                         style: AppTheme.cifra(tamano: 12, peso: FontWeight.w500, color: c.tintaGris)),
                   ],
                 ),
@@ -515,7 +515,7 @@ class _FilaCuenta extends StatelessWidget {
                   children: [
                     Text(cuenta.nombreVisible, overflow: TextOverflow.ellipsis, style: t.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
                     Text(
-                      '${tipoCuentaLegible(cuenta.tipo)} · ${cuenta.moneda} ·${cuenta.ultimos4}',
+                      '${tipoCuentaLegible(cuenta.tipo)} - ${cuenta.moneda} - ${cuenta.ultimos4}',
                       overflow: TextOverflow.ellipsis,
                       style: t.bodySmall?.copyWith(color: c.tintaGris),
                     ),

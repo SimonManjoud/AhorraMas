@@ -35,14 +35,14 @@ Base URL: `http://<host>:8080/api/v1` (en el emulador Android: `http://10.0.2.2:
 ```json
 {"nacionalidadDoc": "V", "cedula": 12345678, "primerNombre": "María", "segundoNombre": null,
  "primerApellido": "Pérez", "segundoApellido": null, "fechaNacimiento": "1995-04-12",
- "correo": "maria@correo.com", "telefonoMovil": "04141234567", "pin": "1234",
+ "correo": "maria@correo.com", "telefonoMovil": "04141234567", "pin": "123456",
  "dispositivo": {"huella": "<hash estable del equipo>", "plataforma": "Android", "modelo": "Pixel 8"}}
 ```
-`201` → `Sesion` (ver 1.2). Valida: mayor de edad, cédula/correo/teléfono únicos (`409`), PIN de 4–6 dígitos.
+`201` → `Sesion` (ver 1.2). Valida: mayor de edad, cédula/correo/teléfono únicos (`409`), PIN de exactamente 6 dígitos (solo al registrar).
 
 ### 1.2 Login — `POST /auth/login` (público)
 ```json
-{"nacionalidadDoc": "V", "cedula": 12345678, "pin": "1234", "huellaDispositivo": "<hash>",
+{"nacionalidadDoc": "V", "cedula": 12345678, "pin": "123456", "huellaDispositivo": "<hash>",
  "plataforma": "Android", "modelo": "Pixel 8"}
 ```
 `200` → `Sesion`
@@ -60,8 +60,8 @@ Base URL: `http://<host>:8080/api/v1` (en el emulador Android: `http://10.0.2.2:
 ### 1.4 Step-up (huella/PIN y OTP)
 * `POST /auth/otp` `{"proposito": "pago"}` → `{"idDesafio": "uuid", "expiraEn": "...", "otpDemo": "482913"}`
   Envía el OTP por SMS (simulador). `otpDemo` solo viene cuando el backend corre en modo demo.
-* `POST /auth/step-up` `{"pin": "1234"}` → nivel `pin`; o
-  `{"pin": "1234", "idDesafio": "uuid", "otp": "482913"}` → nivel `pin_otp`.
+* `POST /auth/step-up` `{"pin": "123456"}` → nivel `pin`; o
+  `{"pin": "123456", "idDesafio": "uuid", "otp": "482913"}` → nivel `pin_otp`.
   Respuesta: `{"stepUpToken": "eyJ...", "nivel": "pin|pin_otp", "expiraEn": "..."}` (vida 5 min).
 
 ### 1.5 KYC — `POST /kyc/verificaciones`

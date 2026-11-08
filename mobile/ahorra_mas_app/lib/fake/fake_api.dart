@@ -390,6 +390,9 @@ class FakeApi
     if (_usuarios.containsKey(s.cedula)) {
       throw _err(409, 'CONFLICTO', 'Ya existe un usuario con esa cédula.');
     }
+    if (!RegExp(r'^\d{6}$').hasMatch(s.pin)) {
+      throw _err(400, 'VALIDACION', 'El PIN debe tener exactamente 6 dígitos.');
+    }
     final edad = _hoy.difference(s.fechaNacimiento).inDays ~/ 365;
     if (edad < 18) throw _err(400, 'VALIDACION', 'Debes ser mayor de edad.');
     final u = _UsuarioF(
@@ -1086,7 +1089,35 @@ class FakeApi
   Future<List<Tarjeta>> tarjetas() async {
     await _esperar();
     _requiereKyc();
-    return _tarjetas;
+    // El emisor conoce a su cliente: las tarjetas propias llevan el nombre de quien inició sesión.
+    final titular = _titularActual();
+    return [
+      for (final t in _tarjetas)
+        Tarjeta(
+          idTarjeta: t.idTarjeta,
+          idInstitucion: t.idInstitucion,
+          banco: t.banco,
+          ultimos4: t.ultimos4,
+          alias: t.alias,
+          titularConfirmado: t.esPropia ? titular : t.titularConfirmado,
+          esPropia: t.esPropia,
+          estadoCuenta: t.estadoCuenta,
+          marca: t.marca,
+        ),
+    ];
+  }
+
+  /// "MARIA PEREZ" a partir del usuario en sesión (sin acentos, como lo imprime un banco).
+  String _titularActual() {
+    final u = _actual;
+    if (u == null) return 'TITULAR';
+    const conAcento = 'ÁÉÍÓÚÜáéíóúü';
+    const sinAcento = 'AEIOUUaeiouu';
+    final nombre = '${u.primerNombre} ${u.primerApellido}'.trim().split('').map((c) {
+      final i = conAcento.indexOf(c);
+      return i < 0 ? c : sinAcento[i];
+    }).join();
+    return nombre.toUpperCase();
   }
 
   @override
@@ -1094,7 +1125,7 @@ class FakeApi
     await _esperar();
     final t = _tarjetas.firstWhere((t) => t.idTarjeta == idTarjeta,
         orElse: () => throw _err(404, 'NO_ENCONTRADO', 'Tarjeta no encontrada.'));
-    return Beneficiario(titular: t.titularConfirmado ?? 'MARIA PEREZ', ultimos4: t.ultimos4);
+    return Beneficiario(titular: t.esPropia ? _titularActual() : (t.titularConfirmado ?? 'TITULAR'), ultimos4: t.ultimos4);
   }
 
   @override

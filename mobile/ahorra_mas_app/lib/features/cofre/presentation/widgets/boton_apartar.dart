@@ -39,7 +39,7 @@ class _BotonApartarCuotaState extends ConsumerState<BotonApartarCuota> {
       mostrarMensaje(
         context,
         '¡Apartaste ${Dinero.usd(r.aporte.montoUsdCts)}! +${r.puntosGanados} puntos'
-        '${racha == null ? '' : ' · racha de ${racha.diasConsecutivos} días'}',
+        '${racha == null ? '' : ' - racha de ${racha.diasConsecutivos} días'}',
       );
     } catch (e) {
       if (mounted) mostrarError(context, e);

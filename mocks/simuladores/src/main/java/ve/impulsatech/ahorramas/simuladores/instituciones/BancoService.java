@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import ve.impulsatech.ahorramas.simuladores.comun.ApiException;
+import ve.impulsatech.ahorramas.simuladores.comun.RegistroTitulares;
 import ve.impulsatech.ahorramas.simuladores.comun.Semilla;
 import ve.impulsatech.ahorramas.simuladores.comun.Tiempo;
 import ve.impulsatech.ahorramas.simuladores.instituciones.ObDtos.Cuenta;
@@ -49,13 +50,16 @@ public class BancoService {
             "PAGO SERVICIO ELECTRICIDAD", "COMPRA EN LINEA", "PAGO MOVIL COMIDA", "RECARGA TELEFONIA"};
 
     private final Tiempo tiempo;
+    private final RegistroTitulares titulares;
     private final Map<String, Cliente> clientes = new ConcurrentHashMap<>();
     private final Map<String, CuentaSim> cuentasPorRef = new ConcurrentHashMap<>();
     private final Map<String, TarjetaSim> tarjetasPorRef = new ConcurrentHashMap<>();
     private final AtomicLong secuenciaMovimientos = new AtomicLong();
 
-    public BancoService(Tiempo tiempo, @Value("${simulador.cedulas-demo:}") List<String> cedulasDemo) {
+    public BancoService(Tiempo tiempo, RegistroTitulares titulares,
+                        @Value("${simulador.cedulas-demo:}") List<String> cedulasDemo) {
         this.tiempo = tiempo;
+        this.titulares = titulares;
         for (String cedula : cedulasDemo) {
             if (!cedula.isBlank()) {
                 for (Institucion inst : Institucion.CATALOGO) {
@@ -186,7 +190,10 @@ public class BancoService {
     }
 
     private Cliente generarCliente(Institucion inst, String cedula) {
-        String titular = NOMBRES[(int) Math.floorMod(Semilla.de("titular", cedula), (long) NOMBRES.length)];
+        // Nombre de respaldo solo para cédulas que nunca pasaron por KYC; si la persona se registró,
+        // el titular real (nombre verificado) se resuelve en cada consulta.
+        String respaldo = NOMBRES[(int) Math.floorMod(Semilla.de("titular", cedula), (long) NOMBRES.length)];
+        Titular titular = new Titular(titulares, cedula, respaldo);
         Random r = Semilla.random("cliente", inst.codigo(), cedula);
         List<CuentaSim> cuentas = new ArrayList<>();
         List<TarjetaSim> tarjetas = new ArrayList<>();
@@ -313,6 +320,13 @@ public class BancoService {
     private record Cliente(List<CuentaSim> cuentas, List<TarjetaSim> tarjetas) {
     }
 
+    /** Titular de una cédula: el nombre verificado por KYC o, si no lo hay, el de respaldo. */
+    record Titular(RegistroTitulares registro, String cedula, String respaldo) {
+        String nombre() {
+            return registro.nombreDe(cedula).orElse(respaldo);
+        }
+    }
+
     private record Mov(String ref, OffsetDateTime fechaHora, String naturaleza, long montoCts, String descripcion,
                        String clasificacion) {
         Movimiento aDto() {
@@ -328,13 +342,13 @@ public class BancoService {
         final String ultimos4;
         final String tipo;
         final String moneda;
-        final String titular;
+        final Titular titular;
         private long saldoCts;
         private final long retenidoCts;
         private final List<Mov> extras = new ArrayList<>();
 
         CuentaSim(String ref, String codigo, String cedula, String ultimos4, String tipo, String moneda,
-                  String titular, long saldoCts, long retenidoCts) {
+                  Titular titular, long saldoCts, long retenidoCts) {
             this.ref = ref;
             this.codigo = codigo;
             this.cedula = cedula;
@@ -388,7 +402,7 @@ public class BancoService {
         }
 
         Cuenta aDto() {
-            return new Cuenta(ref, ultimos4, tipo, moneda, titular);
+            return new Cuenta(ref, ultimos4, tipo, moneda, titular.nombre());
         }
     }
 
@@ -398,7 +412,7 @@ public class BancoService {
         final String codigo;
         final String cedula;
         final String ultimos4;
-        final String titular;
+        final Titular titular;
         final String marca;
         final LocalDate fechaCorte;
         final LocalDate fechaLimitePago;
@@ -406,7 +420,7 @@ public class BancoService {
         private final long pagoMinimoOriginalCts;
         private long pagadoCts;
 
-        TarjetaSim(String ref, String codigo, String cedula, String ultimos4, String titular, LocalDate fechaCorte,
+        TarjetaSim(String ref, String codigo, String cedula, String ultimos4, Titular titular, LocalDate fechaCorte,
                    LocalDate fechaLimitePago, long saldoTotalCts, long pagoMinimoCts, String marca) {
             this.marca = marca;
             this.ref = ref;
@@ -433,7 +447,7 @@ public class BancoService {
         }
 
         public String titular() {
-            return titular;
+            return titular.nombre();
         }
 
         synchronized void abonar(long montoCts) {
@@ -443,7 +457,7 @@ public class BancoService {
 
         synchronized Tarjeta aDto() {
             long minimo = Math.max(0, Math.min(pagoMinimoOriginalCts - pagadoCts, saldoTotalCts));
-            return new Tarjeta(ref, ultimos4, titular, new EstadoCuenta(fechaCorte.toString(),
+            return new Tarjeta(ref, ultimos4, titular.nombre(), new EstadoCuenta(fechaCorte.toString(),
                     fechaLimitePago.toString(), saldoTotalCts, minimo), marca);
         }
     }

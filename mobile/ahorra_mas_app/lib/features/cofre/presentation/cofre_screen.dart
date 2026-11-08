@@ -10,6 +10,7 @@ import '../domain/cofre_models.dart';
 import 'cofre_providers.dart';
 import 'widgets/boton_apartar.dart';
 import 'widgets/cofre_widgets.dart';
+import '../../../core/widgets/texto_enfasis.dart';
 
 /// Pestaña "Cofre Protector" en la Libreta: la meta con la cuota de hoy primero (con su
 /// sello y su botón de un toque), luego la racha con sus días colchón, el Espejo de Impacto
@@ -85,14 +86,14 @@ class CofreScreen extends ConsumerWidget {
                       Padding(
                         padding: const EdgeInsets.only(left: 4, bottom: 8),
                         child: Text(
-                          'Mis metas · ${Dinero.usd(apartado)} apartados',
+                          'Mis metas - ${Dinero.usd(apartado)} apartados',
                           style: Theme.of(context).textTheme.titleSmall?.copyWith(color: c.tintaGris),
                         ),
                       ),
                       if (resto.isEmpty)
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: Text(
+                          child: TextoEnfasis(
                             'Solo tienes esta meta. Crea otra con «Nueva meta».',
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(color: c.tintaGris),
                           ),
@@ -157,7 +158,7 @@ class _Destacada extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 '${Dinero.bs(Dinero.usdABs(r.faltanteHoyUsdCts, r.tasaValorBsX10000))} a tasa BCV '
-                '${Dinero.tasa(r.tasaValorBsX10000)} · ${r.periodosRestantes} '
+                '${Dinero.tasa(r.tasaValorBsX10000)} - ${r.periodosRestantes} '
                 '${r.periodosRestantes == 1 ? 'periodo restante' : 'periodos restantes'}',
                 style: t.bodySmall?.copyWith(color: c.tintaGris),
               ),

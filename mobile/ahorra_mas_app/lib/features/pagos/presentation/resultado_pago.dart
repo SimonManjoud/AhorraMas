@@ -181,7 +181,7 @@ class LineaTiempoPago extends StatelessWidget {
                       children: [
                         Text(historial[i].estadoNuevo.etiqueta, style: const TextStyle(fontWeight: FontWeight.w600)),
                         Text(
-                          '${Fechas.conHora(historial[i].fechaHora)}${historial[i].actor == null ? '' : ' · ${historial[i].actor}'}',
+                          '${Fechas.conHora(historial[i].fechaHora)}${historial[i].actor == null ? '' : ' - ${historial[i].actor}'}',
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ],

@@ -93,7 +93,9 @@ void main() {
     );
     await tester.pumpWidget(conTema(RutaDelDiaCard(ruta: ruta, alApartar: () => tocado = true)));
 
-    expect(find.text(ruta.mensaje), findsOneWidget);
+    // «…» se muestra sin comillas y en cursiva.
+    expect(find.text('Hoy toca apartar \$2,40 (Bs 1.196,96) para Viaje en marzo', findRichText: true), findsOneWidget);
+    expect(find.textContaining('«'), findsNothing);
     expect(find.text('Pendiente'), findsOneWidget);
     expect(find.textContaining('131 periodos restantes'), findsOneWidget);
     expect(find.text('Apartar \$2,40'), findsOneWidget);

@@ -8,6 +8,7 @@ import '../../../core/util/fechas.dart';
 import '../../../core/widgets/comunes.dart';
 import '../domain/puntos.dart';
 import 'puntos_providers.dart';
+import '../../../core/widgets/texto_enfasis.dart';
 
 /// Puntos Ahorra: saldo, nivel (Base/Gold/Platinum), movimientos, recompensas y canjes.
 class PuntosScreen extends ConsumerWidget {
@@ -134,7 +135,7 @@ class _Movimientos extends ConsumerWidget {
                     'canje' => Icons.redeem,
                     _ => Icons.undo,
                   }),
-                  title: Text(m.descripcion ?? m.concepto),
+                  title: TextoEnfasis(m.descripcion ?? m.concepto),
                   subtitle: Text(Fechas.conHora(m.fechaHora)),
                   trailing: Text(
                     '${m.puntos > 0 ? '+' : ''}${_miles(m.puntos)}',
@@ -217,7 +218,7 @@ class _Recompensas extends ConsumerWidget {
                 if (r.comercio != null) r.comercio!,
                 '${_miles(r.costoPuntos)} pts',
                 if (r.nivelMinimo != 'Base') 'Nivel ${r.nivelMinimo}',
-              ].join(' · ')),
+              ].join(' - ')),
               trailing: FilledButton.tonal(
                 onPressed: nivelOk && alcanza && !agotada ? () => _canjear(context, ref, r) : null,
                 child: Text(agotada ? 'Agotada' : (!nivelOk ? 'Bloqueada' : 'Canjear')),
@@ -246,7 +247,7 @@ class _Canjes extends ConsumerWidget {
                   ListTile(
                     leading: const Icon(Icons.confirmation_number_outlined),
                     title: SelectableText(c.codigoCanje, style: const TextStyle(fontWeight: FontWeight.w700)),
-                    subtitle: Text('${c.descripcion ?? ''} ${Fechas.conHora(c.fechaHora)}'.trim()),
+                    subtitle: TextoEnfasis('${c.descripcion ?? ''} ${Fechas.conHora(c.fechaHora)}'.trim()),
                     trailing: Text('-${_miles(c.puntosCanjeados)} pts'),
                   ),
               ],

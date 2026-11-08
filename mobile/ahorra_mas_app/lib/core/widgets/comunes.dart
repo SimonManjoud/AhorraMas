@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../api/api_exception.dart';
 import '../theme/app_theme.dart';
+import 'texto_enfasis.dart';
 
 /// Pinta un [AsyncValue] con estados de carga y error uniformes.
 class VistaAsync<T> extends StatelessWidget {
@@ -179,7 +180,7 @@ void mostrarError(BuildContext context, Object error) {
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
     ..showSnackBar(SnackBar(
-      content: Text(mensajeDeError(error)),
+      content: TextoEnfasis(mensajeDeError(error)),
       backgroundColor: AhorraColores.of(context).peligro,
       behavior: SnackBarBehavior.floating,
     ));
@@ -189,7 +190,7 @@ void mostrarMensaje(BuildContext context, String mensaje) {
   if (!context.mounted) return;
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(mensaje), behavior: SnackBarBehavior.floating));
+    ..showSnackBar(SnackBar(content: TextoEnfasis(mensaje), behavior: SnackBarBehavior.floating));
 }
 
 Future<bool> confirmar(
@@ -203,7 +204,7 @@ Future<bool> confirmar(
     context: context,
     builder: (ctx) => AlertDialog(
       title: Text(titulo),
-      content: Text(mensaje),
+      content: TextoEnfasis(mensaje),
       actions: [
         TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
         FilledButton(

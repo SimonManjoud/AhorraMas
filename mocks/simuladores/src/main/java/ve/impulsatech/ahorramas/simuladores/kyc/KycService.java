@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import ve.impulsatech.ahorramas.simuladores.comun.ApiException;
+import ve.impulsatech.ahorramas.simuladores.comun.RegistroTitulares;
 import ve.impulsatech.ahorramas.simuladores.kyc.KycController.ResultadoKyc;
 import ve.impulsatech.ahorramas.simuladores.kyc.KycController.SolicitudKyc;
 
@@ -18,6 +19,12 @@ import ve.impulsatech.ahorramas.simuladores.kyc.KycController.SolicitudKyc;
  */
 @Service
 public class KycService {
+
+    private final RegistroTitulares titulares;
+
+    public KycService(RegistroTitulares titulares) {
+        this.titulares = titulares;
+    }
 
     public ResultadoKyc verificar(SolicitudKyc s) {
         if (s == null || s.cedula() == null || s.cedula() <= 0) {
@@ -39,6 +46,7 @@ public class KycService {
         if (terminacion == 0) {
             return new ResultadoKyc(ref, "rechazado", false, false, "Prueba de vida no superada");
         }
+        titulares.registrar(RegistroTitulares.cedula(s.nacionalidad(), s.cedula()), s.primerNombre(), s.primerApellido());
         return new ResultadoKyc(ref, "aprobado", true, false, null);
     }
 }

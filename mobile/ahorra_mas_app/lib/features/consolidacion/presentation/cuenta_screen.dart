@@ -75,7 +75,7 @@ class CuentaScreen extends ConsumerWidget {
                       Text('Saldo', style: Theme.of(context).textTheme.labelLarge),
                       Text(Dinero.enMoneda(c.saldoCts, c.moneda),
                           style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
-                      Text('≈ ${Dinero.bs(c.saldoBsCts)} · ${Dinero.usd(c.saldoUsdCts)}'),
+                      Text('≈ ${Dinero.bs(c.saldoBsCts)} - ${Dinero.usd(c.saldoUsdCts)}'),
                     ],
                   ),
                 ),

@@ -167,7 +167,7 @@ class _TarjetaTdc extends StatelessWidget {
                   _Dato('Fecha de corte', Fechas.corta(ec.fechaCorte)),
                   _Dato(
                     'Fecha límite',
-                    '${Fechas.corta(ec.fechaLimitePago)}${diasLimite == null ? '' : ' · ${diasLimite < 0 ? 'vencida' : '$diasLimite días'}'}',
+                    '${Fechas.corta(ec.fechaLimitePago)}${diasLimite == null ? '' : ' - ${diasLimite < 0 ? 'vencida' : '$diasLimite días'}'}',
                     color: urgente ? c.peligro : null,
                   ),
                 ],

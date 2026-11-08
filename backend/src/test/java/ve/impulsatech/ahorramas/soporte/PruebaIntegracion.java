@@ -52,10 +52,10 @@ public abstract class PruebaIntegracion {
         ClienteApi api = cliente();
         var r = api.post("/api/v1/auth/registro", Map.of("nacionalidadDoc", "V", "cedula", cedula, "primerNombre", "María",
                 "primerApellido", "Pérez", "fechaNacimiento", "1995-04-12", "correo", "u" + cedula + "@correo.com", "telefonoMovil", tel,
-                "pin", "1234", "dispositivo", Map.of("huella", huella, "plataforma", "Android", "modelo", "Pixel 8")));
+                "pin", "123456", "dispositivo", Map.of("huella", huella, "plataforma", "Android", "modelo", "Pixel 8")));
         assertThat(r.status()).as("registro: %s", r.cuerpo()).isEqualTo(201);
         api.conToken(r.texto("accessToken"));
-        return new UsuarioPrueba(r.largo("usuario.idUsuario"), cedula, "1234", huella, api);
+        return new UsuarioPrueba(r.largo("usuario.idUsuario"), cedula, "123456", huella, api);
     }
 
     protected void verificarKyc(UsuarioPrueba u) {

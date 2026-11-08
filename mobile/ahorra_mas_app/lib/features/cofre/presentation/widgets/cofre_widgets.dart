@@ -5,6 +5,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/util/fechas.dart';
 import '../../../../core/widgets/libreta.dart';
 import '../../domain/cofre_models.dart';
+import '../../../../core/widgets/texto_enfasis.dart';
 
 IconData iconoCategoria(CategoriaMeta c) => switch (c) {
       CategoriaMeta.viaje => Icons.flight_takeoff,
@@ -74,16 +75,16 @@ class RutaDelDiaCard extends StatelessWidget {
             children: [
               Align(alignment: Alignment.centerRight, child: EtiquetaLibro(etiqueta, color: color)),
               const SizedBox(height: 10),
-              Text(ruta.mensaje, style: t.headlineSmall?.copyWith(color: c.tinta)),
+              TextoEnfasis(ruta.mensaje, style: t.headlineSmall?.copyWith(color: c.tinta)),
               const SizedBox(height: 8),
               Text(
-                'Cuota: ${Dinero.usd(ruta.montoSugeridoUsdCts)} · ${Dinero.bs(ruta.montoSugeridoBsCts)} '
+                'Cuota: ${Dinero.usd(ruta.montoSugeridoUsdCts)} - ${Dinero.bs(ruta.montoSugeridoBsCts)} '
                 'a tasa BCV ${Dinero.tasa(ruta.tasaValorBsX10000)}',
                 style: detalle,
               ),
               Text(
                 '${ruta.periodosRestantes} ${ruta.periodosRestantes == 1 ? 'periodo restante' : 'periodos restantes'}'
-                '${ruta.aportadoHoyUsdCts > 0 ? ' · hoy llevas ${Dinero.usd(ruta.aportadoHoyUsdCts)}' : ''}',
+                '${ruta.aportadoHoyUsdCts > 0 ? ' - hoy llevas ${Dinero.usd(ruta.aportadoHoyUsdCts)}' : ''}',
                 style: detalle,
               ),
               if (alApartar != null && !cumplida) ...[
@@ -162,7 +163,7 @@ class MetaCard extends StatelessWidget {
                       children: [
                         Text(meta.nombre, style: t.titleMedium),
                         const SizedBox(height: 2),
-                        Rubrica('${meta.categoria.etiqueta} · ${meta.frecuenciaCuota.etiqueta}'),
+                        Rubrica('${meta.categoria.etiqueta} - ${meta.frecuenciaCuota.etiqueta}'),
                       ],
                     ),
                   ),
@@ -171,7 +172,7 @@ class MetaCard extends StatelessWidget {
                       padding: const EdgeInsets.only(left: 8),
                       child: SelloRectangular(
                         titulo: 'Sellado',
-                        detalle: '${Dinero.usd(sello.montoSelladoUsdCts)} · ${Fechas.libreta(sello.fechaLiberacion)}',
+                        detalle: '${Dinero.usd(sello.montoSelladoUsdCts)} - ${Fechas.libreta(sello.fechaLiberacion)}',
                       ),
                     )
                   else if (sello != null)
@@ -276,10 +277,10 @@ class RachaResumen extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${Dinero.multiplicador(racha.multiplicadorX100)} · '
+                      '${Dinero.multiplicador(racha.multiplicadorX100)} - '
                       '${racha.colchonesDisponibles} '
                       '${racha.colchonesDisponibles == 1 ? 'colchón libre' : 'colchones libres'}'
-                      '${racha.aporteHoy ? ' · ya aportaste hoy' : ''}',
+                      '${racha.aporteHoy ? ' - ya aportaste hoy' : ''}',
                       style: AppTheme.cifra(tamano: 11.5, color: c.tintaGris),
                     ),
                   ],
@@ -322,7 +323,7 @@ class FranjaDias extends StatelessWidget {
                     TipoDiaRacha.colchon => TipoMarca.colchon,
                     TipoDiaRacha.sinAporte => TipoMarca.sinAporte,
                   },
-                  descripcion: '${Fechas.media(d.fecha)} · ${switch (d.tipo) {
+                  descripcion: '${Fechas.media(d.fecha)} - ${switch (d.tipo) {
                     TipoDiaRacha.aporte => 'aporte',
                     TipoDiaRacha.colchon => 'día colchón',
                     TipoDiaRacha.sinAporte => 'sin aporte',

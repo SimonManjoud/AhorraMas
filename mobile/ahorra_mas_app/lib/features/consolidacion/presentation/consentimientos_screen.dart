@@ -61,7 +61,7 @@ class ConsentimientosScreen extends ConsumerWidget {
                   child: ListTile(
                     title: Text(c.institucion, style: const TextStyle(fontWeight: FontWeight.w600)),
                     subtitle: Text([
-                      'Lectura de saldos${c.permiteDebitoTdc ? ' · débito para TDC' : ''}',
+                      'Lectura de saldos${c.permiteDebitoTdc ? ' - débito para TDC' : ''}',
                       if (c.fechaVencimiento != null) 'Vence ${Fechas.corta(c.fechaVencimiento)}',
                     ].join('\n')),
                     isThreeLine: c.fechaVencimiento != null,

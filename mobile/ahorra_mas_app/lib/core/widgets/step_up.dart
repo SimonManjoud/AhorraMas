@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/auth/domain/auth_models.dart';
 import '../api/api_exception.dart';
 import '../di/providers.dart';
+import 'texto_enfasis.dart';
 
 /// Pide confirmación reforzada (step-up) y devuelve el token, o `null` si el usuario cancela.
 ///
@@ -122,7 +123,7 @@ class _HojaStepUpState extends ConsumerState<_HojaStepUp> {
             ],
           ),
           const SizedBox(height: 8),
-          Text(widget.motivo, style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
+          TextoEnfasis(widget.motivo, style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
           const SizedBox(height: 16),
           if (widget.conOtp && _desafio?.otpDemo != null)
             Container(
@@ -138,7 +139,7 @@ class _HojaStepUpState extends ConsumerState<_HojaStepUp> {
                   Icon(Icons.developer_mode, size: 18, color: cs.onTertiaryContainer),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: Text('Modo demo · OTP enviado por SMS: ${_desafio!.otpDemo}',
+                    child: Text('Modo demo - OTP enviado por SMS: ${_desafio!.otpDemo}',
                         style: TextStyle(color: cs.onTertiaryContainer)),
                   ),
                   TextButton(

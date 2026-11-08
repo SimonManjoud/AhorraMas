@@ -53,7 +53,7 @@ class _MetaDetalleScreenState extends ConsumerState<MetaDetalleScreen> {
       mostrarMensaje(
         context,
         '¡Apartaste ${Dinero.usd(r.aporte.montoUsdCts)}! +${r.puntosGanados} puntos'
-        '${racha == null ? '' : ' · racha de ${racha.diasConsecutivos} días (${Dinero.multiplicador(racha.multiplicadorX100)})'}',
+        '${racha == null ? '' : ' - racha de ${racha.diasConsecutivos} días (${Dinero.multiplicador(racha.multiplicadorX100)})'}',
       );
     } catch (e) {
       if (mounted) mostrarError(context, e);
@@ -277,7 +277,7 @@ class _Encabezado extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 4),
                   child: Text(
-                    'de ${Dinero.usd(meta.montoObjetivoUsdCts)} · ${Dinero.porcentajePb(meta.progresoPb)}',
+                    'de ${Dinero.usd(meta.montoObjetivoUsdCts)} - ${Dinero.porcentajePb(meta.progresoPb)}',
                     style: AppTheme.cifra(tamano: 13, color: c.tintaGris),
                   ),
                 ),
@@ -319,7 +319,7 @@ class _SelectorCuenta extends ConsumerWidget {
         for (final c in cuentas)
           DropdownMenuItem<int?>(
             value: c.idCuenta,
-            child: Text('${c.nombreVisible} •••• ${c.ultimos4} · ${Dinero.enMoneda(c.saldoCts, c.moneda)}',
+            child: Text('${c.nombreVisible} •••• ${c.ultimos4} - ${Dinero.enMoneda(c.saldoCts, c.moneda)}',
                 overflow: TextOverflow.ellipsis),
           ),
       ],
@@ -370,7 +370,7 @@ class _SeccionSello extends StatelessWidget {
                 const SizedBox(width: 12),
                 SelloRectangular(
                   titulo: 'Sellado',
-                  detalle: '${Dinero.usd(s.montoSelladoUsdCts)} · ${Fechas.libreta(s.fechaLiberacion)}',
+                  detalle: '${Dinero.usd(s.montoSelladoUsdCts)} - ${Fechas.libreta(s.fechaLiberacion)}',
                 ),
               ],
             ),
