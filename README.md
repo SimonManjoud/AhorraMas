@@ -1,4 +1,4 @@
-# Ahorra+ · MVP
+# Ahorra+ - MVP
 
 **Impulsa Tech, C.A.** — Simón Manjoud, Sebastián Pérez, Andrés De Quintal
 
